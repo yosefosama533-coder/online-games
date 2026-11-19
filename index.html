@@ -142,6 +142,13 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 </section>
 <section id="charge" class="page"><button class="btn navback" id="chargeBack">← <span id="chargeBackLabel">العودة للرئيسية</span></button><div class="hero"><h2 id="chargeTitle">💳 الشحن</h2><p id="chargeDesc">قسم الشحن سيتم تجهيزه في المرحلة القادمة.</p></div></section>
 </main>
+<div id="imageLightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="عرض الصور" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:16px;">
+  <button id="lightboxClose" type="button" aria-label="إغلاق" style="position:absolute;top:16px;right:16px;font-size:28px;background:#263750;color:white;border-radius:50%;width:44px;height:44px;">×</button>
+  <button id="lightboxPrev" type="button" aria-label="الصورة السابقة" style="font-size:28px;background:#263750;color:white;border-radius:12px;padding:10px 14px;">‹</button>
+  <img id="lightboxImage" alt="صورة المنشور" style="max-width:78vw;max-height:85vh;object-fit:contain;margin:0 12px;">
+  <button id="lightboxNext" type="button" aria-label="الصورة التالية" style="font-size:28px;background:#263750;color:white;border-radius:12px;padding:10px 14px;">›</button>
+</div>
+<style>.lightbox.open{display:flex!important}</style>
 <footer>© <span id="year"></span> Online Games</footer>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
