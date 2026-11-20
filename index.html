@@ -320,8 +320,8 @@ async function migrateLocalDataOnce(){
  }catch(e){console.error("ترحيل البيانات القديمة",e);}
 }
 function updateAccountButton(){
-$("bottomNavAdmin").hidden=!isAdmin;
-$("bottomNavUser").hidden=isAdmin;
+$("bottomNavAdmin").hidden=!(currentUser&&isAdminUid(currentUser.uid));
+$("bottomNavUser").hidden=!!(currentUser&&isAdminUid(currentUser.uid));
 $("settingsLogout").hidden=!currentUser;
  if(currentUser&&hasFullAccount()){
   $("accountBtn").hidden=true;$("profileBtn").hidden=false;
@@ -464,10 +464,10 @@ async function runSocialLogin(provider,label){const msg=$("authMessage");msg.tex
 $("googleLogin").onclick=()=>runSocialLogin(googleProvider,"Google");
 $("facebookLogin").onclick=()=>runSocialLogin(facebookProvider,"Facebook");
 $("guestLogin").onclick=async()=>{const msg=$("authMessage");msg.textContent="جارٍ إنشاء حساب زائر...";try{await signInAnonymously(auth);msg.textContent="تم الدخول كزائر بنجاح.";showPage("home");}catch(e){console.error("Guest login error",e);msg.textContent="تعذر الدخول كزائر: "+(e.code||e.message)+". تأكد من تفعيل Anonymous في Firebase Authentication.";}};
-$("loginBtn").onclick=async()=>{const email=$("adminEmail").value.trim(),password=$("adminPassword").value;if(!email||!password){alert("اكتب البريد الإلكتروني وكلمة المرور");return;}try{const result=await signInWithEmailAndPassword(auth,email,password);if(result.user.uid!==ADMIN_UID){await signOut(auth);alert("هذا الحساب ليس حساب المدير.");return;}showPage("admin");showAdminTools();}catch(e){alert("تعذر دخول المدير: "+e.message);}};
+$("loginBtn").onclick=async()=>{const email=$("adminEmail").value.trim(),password=$("adminPassword").value;if(!email||!password){alert("اكتب البريد الإلكتروني وكلمة المرور");return;}try{const result=await signInWithEmailAndPassword(auth,email,password);if(!isAdminUid(result.user.uid)){await signOut(auth);alert("هذا الحساب ليس حساب المدير.");return;}showPage("admin");showAdminTools();}catch(e){alert("تعذر دخول المدير: "+e.message);}};
 $("accountBtn").onclick=()=>showPage("loginPage");
 // Auth state
-onAuthStateChanged(auth,async user=>{currentUser=user;isAdmin=!!(user&&user.uid===ADMIN_UID);if(!hasFullAccount()){profileReady=false;userProfile=null;}updateAccountButton();startAdminNoticeCounters();if(user&&hasFullAccount()){await loadMyProfile();await awardVisitOnce();}if(isAdmin){try{await seedDefaultCategories();await migrateLocalDataOnce();}catch(e){console.error("تعذر تجهيز الأقسام أو نقل البيانات",e);}if($("admin").classList.contains("active"))showAdminTools();}else if($("admin").classList.contains("active")){showAdminTools();}await refreshPostExtras();});
+onAuthStateChanged(auth,async user=>{currentUser=user;isAdmin=!!(user&&isAdminUid(user.uid));if(!hasFullAccount()){profileReady=false;userProfile=null;}updateAccountButton();startAdminNoticeCounters();if(user&&hasFullAccount()){await loadMyProfile();await awardVisitOnce();}if(isAdmin){try{await seedDefaultCategories();await migrateLocalDataOnce();}catch(e){console.error("تعذر تجهيز الأقسام أو نقل البيانات",e);}if($("admin").classList.contains("active"))showAdminTools();}else if($("admin").classList.contains("active")){showAdminTools();}await refreshPostExtras();});
 // Firestore live data
 startListeners();
 $("year").textContent=new Date().getFullYear();setTheme(theme);renderText();renderGames();renderFeed();
