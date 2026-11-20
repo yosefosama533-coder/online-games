@@ -428,7 +428,24 @@ let activePurchasePost=null, selectedPayment="", selectedPaymentNumber="", activ
 const VODAFONE_NUMBERS=["01099202521","01023307464","01034388227","01097544346"];
 function money(v){return (Number(v)||0).toLocaleString("ar-EG")+" جنيه";}
 function openDeveloperProfile(){openPublicProfile(ADMIN_UID);}
-async function startDeveloperChat(){if(!currentUser){showPage("loginPage");return;}if(currentUser.uid===ADMIN_UID){showPage("adminMessagesPage");await loadAdminChats();return;}await setDoc(doc(db,"chats",currentUser.uid),{userId:currentUser.uid,userName:userProfile?.name||currentUser.displayName||"مستخدم",photo:userProfile?.photo||currentUser.photoURL||"",updatedAt:serverTimestamp()},{merge:true});showPage("chatPage");$("chatHeading").textContent="الدردشة مع المطور";$("chatHeading").dataset.chatName="الدردشة مع المطور";await watchChat(currentUser.uid,false);}
+async function startDeveloperChat(){
+  if(!currentUser){showPage("loginPage");return;}
+  if(isAdminUid(currentUser.uid)){
+    showPage("adminMessagesPage");
+    await loadAdminChats();
+    return;
+  }
+  await setDoc(doc(db,"chats",currentUser.uid),{
+    userId:currentUser.uid,
+    userName:userProfile?.name||currentUser.displayName||"مستخدم",
+    photo:userProfile?.photo||currentUser.photoURL||"",
+    updatedAt:serverTimestamp()
+  },{merge:true});
+  showPage("chatPage");
+  $("chatHeading").textContent="الدردشة مع المطور";
+  $("chatHeading").dataset.chatName="الدردشة مع المطور";
+  await watchChat(currentUser.uid,false);
+}
 function renderMessages(box,snap){const me=currentUser?.uid;box.innerHTML=snap.empty?'<p class="muted" style="text-align:center;margin-top:30px">ابدأ المحادثة برسالة للمطور.</p>':snap.docs.map(d=>{const m=d.data(),own=m.senderId===me,side=own?'own':'other';return `<div class="chat-bubble-row ${side}"><div class="chat-bubble ${side}">${m.text?`<div style="white-space:pre-wrap">${escapeHtml(m.text)}</div>`:''}${m.image?`<img src="${m.image}" alt="صورة مرسلة في الدردشة">`:''}<small class="chat-time">${m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):''}</small></div></div>`;}).join("");box.scrollTop=box.scrollHeight;}
 async function markChatRead(uid,adminView){try{await updateDoc(doc(db,"chats",uid),adminView?{unreadForAdmin:0}:{unreadForUser:0});}catch(e){console.warn("تعذر تحديث حالة قراءة المحادثة",e);}}
 async function watchChat(uid,adminView){if(activeChatUnsub)activeChatUnsub();await markChatRead(uid,adminView);const ref=collection(db,"chats",uid,"messages");activeChatUnsub=onSnapshot(query(ref,orderBy("createdAt","asc")),async snap=>{renderMessages($("chatMessages"),snap);await markChatRead(uid,adminView);},e=>{$("chatError").textContent="تعذر تحميل الرسائل: "+e.message;});}
