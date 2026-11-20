@@ -258,6 +258,73 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+let messaging = null;
+let notificationToken = null;
+
+async function enablePushNotifications() {
+  try {
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      alert("جهازك أو المتصفح لا يدعم الإشعارات.");
+      return;
+    }
+
+    if (!currentUser) {
+      alert("سجّل الدخول أولاً.");
+      return;
+    }
+
+    if (!(await isSupported())) {
+      alert("الإشعارات غير مدعومة على هذا الجهاز.");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+      alert("لم يتم السماح بالإشعارات.");
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    messaging = getMessaging(app);
+
+    notificationToken = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: registration
+    });
+
+    if (!notificationToken) {
+      alert("تعذر الحصول على رمز الإشعارات.");
+      return;
+    }
+
+    await setDoc(doc(db, "profiles", currentUser.uid), {
+      notificationToken: notificationToken,
+      notificationsEnabled: true
+    }, { merge: true });
+
+    alert("تم تفعيل الإشعارات بنجاح.");
+  } catch (error) {
+    console.error("Push notification error:", error);
+    alert("تعذر تفعيل الإشعارات: " + error.message);
+  }
+}
+
+async function disablePushNotifications() {
+  try {
+    if (currentUser) {
+      await updateDoc(doc(db, "profiles", currentUser.uid), {
+        notificationToken: "",
+        notificationsEnabled: false
+      });
+    }
+
+    notificationToken = null;
+    alert("تم إيقاف الإشعارات.");
+  } catch (error) {
+    alert("تعذر إيقاف الإشعارات: " + error.message);
+  }
+}
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 facebookProvider.addScope("email");
