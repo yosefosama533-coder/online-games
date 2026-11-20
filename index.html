@@ -470,4 +470,12 @@ startListeners();
 $("year").textContent=new Date().getFullYear();setTheme(theme);renderText();renderGames();renderFeed();
 </script>
 
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .catch(error => console.error("SW Error:", error));
+  });
+}
+</script>
 </body></html>
