@@ -320,9 +320,9 @@ async function migrateLocalDataOnce(){
  }catch(e){console.error("ترحيل البيانات القديمة",e);}
 }
 function updateAccountButton(){
- $("bottomNavAdmin").hidden=!(currentUser&&currentUser.uid===ADMIN_UID);
- $("bottomNavUser").hidden=!!(currentUser&&currentUser.uid===ADMIN_UID);
- $("settingsLogout").hidden=!currentUser;
+$("bottomNavAdmin").hidden=!isAdmin;
+$("bottomNavUser").hidden=isAdmin;
+$("settingsLogout").hidden=!currentUser;
  if(currentUser&&hasFullAccount()){
   $("accountBtn").hidden=true;$("profileBtn").hidden=false;
   const pic=userProfile?.photo||currentUser.photoURL||defaultAvatar;
