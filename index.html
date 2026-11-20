@@ -245,7 +245,7 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, orderBy, runTransaction, where, limit, increment } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
+import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging.js";
 const firebaseConfig = {
   apiKey: "AIzaSyBX5eOYj9WzstY6j23A7ffBezwSoZ-9a5k",
   authDomain: "online-games-27461.firebaseapp.com",
