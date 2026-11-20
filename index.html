@@ -446,7 +446,16 @@ async function startDeveloperChat(){
   $("chatHeading").dataset.chatName="الدردشة مع المطور";
   await watchChat(currentUser.uid,false);
 }
-function renderMessages(box,snap){const me=currentUser?.uid;box.innerHTML=snap.empty?'<p class="muted" style="text-align:center;margin-top:30px">ابدأ المحادثة برسالة للمطور.</p>':snap.docs.map(d=>{const m=d.data(),own=m.senderId===me,side=own?'own':'other';return `<div class="chat-bubble-row ${side}"><div class="chat-bubble ${side}">${m.text?`<div style="white-space:pre-wrap">${escapeHtml(m.text)}</div>`:''}${m.image?`<img src="${m.image}" alt="صورة مرسلة في الدردشة">`:''}<small class="chat-time">${m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):''}</small></div></div>`;}).join("");box.scrollTop=box.scrollHeight;}
+function renderMessages(box,snap){
+  const me=currentUser?.uid;
+  box.innerHTML=snap.empty?'<p class="muted" style="text-align:center;margin-top:30px">ابدأ المحادثة برسالة للمطور.</p>':snap.docs.map(d=>{
+    const m=d.data();
+    const own=isAdminUid(m.senderId)?isAdminUid(me):m.senderId===me;
+    const side=own?'own':'other';
+    return `<div class="chat-bubble-row ${side}"><div class="chat-bubble ${side}">${m.text?`<div style="white-space:pre-wrap">${escapeHtml(m.text)}</div>`:''}${m.image?`<img src="${m.image}" alt="صورة مرسلة في الدردشة">`:''}<small class="chat-time">${m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):''}</small></div></div>`;
+  }).join("");
+  box.scrollTop=box.scrollHeight;
+}
 async function markChatRead(uid,adminView){try{await updateDoc(doc(db,"chats",uid),adminView?{unreadForAdmin:0}:{unreadForUser:0});}catch(e){console.warn("تعذر تحديث حالة قراءة المحادثة",e);}}
 async function watchChat(uid,adminView){if(activeChatUnsub)activeChatUnsub();await markChatRead(uid,adminView);const ref=collection(db,"chats",uid,"messages");activeChatUnsub=onSnapshot(query(ref,orderBy("createdAt","asc")),async snap=>{renderMessages($("chatMessages"),snap);await markChatRead(uid,adminView);},e=>{$("chatError").textContent="تعذر تحميل الرسائل: "+e.message;});}
 async function sendChatMessage(){
