@@ -180,7 +180,7 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 </nav>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, orderBy, runTransaction, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -352,7 +352,8 @@ $("adminMessagesBack").onclick=()=>showPage("home");$("adminPurchasesBack").oncl
 $("adminChatList").addEventListener("click",()=>{});$("adminPurchaseList").addEventListener("click",e=>{const b=e.target.closest("[data-admin-purchase]");if(b&&isAdmin)openPurchaseDetail(b.dataset.adminPurchase,true);});$("purchaseHistoryList").addEventListener("click",e=>{const b=e.target.closest("[data-purchase-open]");if(b)openPurchaseDetail(b.dataset.purchaseOpen,false);});
 $("feed").addEventListener("click",e=>{const b=e.target.closest("[data-buy-post]");if(b)openPurchase(b.dataset.buyPost);});$("categoryFeed").addEventListener("click",e=>{const b=e.target.closest("[data-buy-post]");if(b)openPurchase(b.dataset.buyPost);});
 
-$("googleLogin").onclick=async()=>{try{await signInWithPopup(auth,googleProvider);$("authMessage").textContent="تم تسجيل الدخول.";showPage("home");}catch(e){$("authMessage").textContent="تعذر تسجيل الدخول: "+e.message;}};
+$("googleLogin").onclick=async()=>{try{$("googleLogin").disabled=true;$("authMessage").textContent="جارٍ تحويلك إلى Google لتسجيل الدخول...";await signInWithRedirect(auth,googleProvider);}catch(e){$("authMessage").textContent="تعذر بدء تسجيل الدخول: "+e.message;$("googleLogin").disabled=false;}};
+getRedirectResult(auth).then(result=>{if(result&&result.user){$("authMessage").textContent="تم تسجيل الدخول بنجاح.";showPage("home");}}).catch(e=>{$("authMessage").textContent="تعذر إكمال تسجيل الدخول: "+e.message;$("googleLogin").disabled=false;});
 $("loginBtn").onclick=async()=>{const email=$("adminEmail").value.trim(),password=$("adminPassword").value;if(!email||!password){alert("اكتب البريد الإلكتروني وكلمة المرور");return;}try{const result=await signInWithEmailAndPassword(auth,email,password);if(result.user.uid!==ADMIN_UID){await signOut(auth);alert("هذا الحساب ليس حساب المدير.");return;}showPage("admin");showAdminTools();}catch(e){alert("تعذر دخول المدير: "+e.message);}};
 $("accountBtn").onclick=()=>showPage("loginPage");
 // Auth state
