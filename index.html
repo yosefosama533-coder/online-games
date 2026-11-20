@@ -56,7 +56,8 @@ footer{border-top:1px solid var(--line);padding:22px 0;margin-top:25px;text-alig
 .pills{display:flex;gap:8px}.pill{padding:9px 13px;border-radius:10px;background:var(--panel2);color:var(--text);border:1px solid var(--line)}.pill.active{background:var(--blue);color:white}
 .formgrid{display:grid;gap:10px;margin-top:12px}.field{resize:vertical}.primary{background:var(--blue);color:white;padding:11px 16px;border-radius:10px;font-weight:800}.muted{color:var(--muted);font-size:13px}
 .notice{background:var(--panel2);border-radius:12px;padding:12px;color:var(--muted);line-height:1.6}
-.navback{margin:12px 0}
+.navback{margin:12px 0}.social-links{padding:8px 16px}.social-link{display:flex;align-items:center;gap:13px;padding:14px 4px;color:var(--text);text-decoration:none;border-bottom:1px solid var(--line)}.social-link:last-child{border-bottom:0}.social-link>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:2px}.social-link small{font-size:12px;color:var(--muted)}.social-link>b{color:var(--gold);font-size:18px}.social-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:var(--panel2);border:1px solid var(--line);font-size:23px;font-weight:900;color:var(--gold)}.social-link:active{opacity:.7}
+
 #admin:target{display:block}
 .adminbox input[type=password]{letter-spacing:1px}
 #accountBtn{white-space:nowrap;padding:9px 11px;font-size:13px}
@@ -103,8 +104,23 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 <div class="settingrow"><div><strong>خدمة العملاء</strong><div class="muted">الخدمة غير متاحة حاليًا</div></div><button class="pill" id="customerServiceBtn" type="button" disabled>قريبًا</button></div>
 <div class="settingrow"><div><strong>سجل الشراء</strong><div class="muted">طلبات الشراء ومحادثاتها وحالتها</div></div><button class="pill" id="purchaseHistoryOpen" type="button">فتح</button></div>
 <div class="settingrow"><div><strong>اقتراحات</strong><div class="muted">شاركنا أفكارك لتحسين التطبيق</div></div><button class="pill" id="suggestionsOpen" type="button">فتح</button></div>
+<div class="settingrow"><div><strong>تابع المطور</strong><div class="muted">تابع صفحاتي وروابط التواصل</div></div><button class="pill" id="developerSocialOpen" type="button">فتح</button></div>
 <div class="settingrow"><div><strong>الحساب</strong><div class="muted">إدارة تسجيل الدخول</div></div><button class="danger" id="settingsLogout" type="button" hidden>تسجيل الخروج</button></div>
 </div></section>
+
+
+<section id="developerSocialPage" class="page">
+<button class="btn navback" id="developerSocialBack" type="button">← العودة للإعدادات</button>
+<h2>تابع المطور</h2>
+<p class="muted">تابعني على منصات التواصل أو تواصل معي مباشرة.</p>
+<div class="settingsbox social-links">
+<a class="social-link" href="https://www.facebook.com/share/1ELHmLUsmj/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer"><span class="social-icon">f</span><span><strong>Facebook</strong><small>صفحة المطور على فيسبوك</small></span><b>↗</b></a>
+<a class="social-link" href="https://www.instagram.com/mtmared11?bqrl=dWRqc3RjcmpnMGhp&utm_source=qr" target="_blank" rel="noopener noreferrer"><span class="social-icon">◎</span><span><strong>Instagram</strong><small>@mtmared11</small></span><b>↗</b></a>
+<a class="social-link" href="https://youtube.com/@y7os?si=ipDt-2_HpS7RTK7C" target="_blank" rel="noopener noreferrer"><span class="social-icon">▶</span><span><strong>YouTube</strong><small>@y7os</small></span><b>↗</b></a>
+<a class="social-link" href="https://t.me/mtmared1" target="_blank" rel="noopener noreferrer"><span class="social-icon">➤</span><span><strong>Telegram</strong><small>@mtmared1</small></span><b>↗</b></a>
+<a class="social-link" href="https://www.tiktok.com/@mtm_100" target="_blank" rel="noopener noreferrer"><span class="social-icon">♪</span><span><strong>TikTok</strong><small>@mtm_100</small></span><b>↗</b></a>
+</div>
+</section>
 
 <section id="admin" class="page">
 <div class="heading"><h2 id="adminHeading">لوحة تحكم الإدارة</h2><button class="btn" id="adminHome">الرئيسية</button></div>
@@ -313,7 +329,7 @@ async function compressImage(file,maxBytes=700000,maxDimension=900,quality=0.62)
 function resetAdminSequence(){onlineClicks=0;gamesClicks=0;adminSequenceReady=false;}
 function openAdminRoute(){showPage("admin");showAdminTools();}
 // Navigation and preferences
-$("settingsBtn").onclick=()=>showPage("settings");$("suggestionsOpen").onclick=()=>showPage("suggestionsPage");$("suggestionsBack").onclick=()=>showPage("settings");$("settingsLogout").onclick=async()=>{if(currentUser&&confirm("هل تريد تسجيل الخروج؟")){await signOut(auth);showPage("home");resetAdminSequence();}};$("backBtn").onclick=()=>showPage("home");$("categoryBack").onclick=()=>showPage("gamePickerPage");$("buyBack").onclick=()=>showPage("home");$("loginBack").onclick=()=>showPage("home");$("chargeBack").onclick=()=>showPage("home");
+$("settingsBtn").onclick=()=>showPage("settings");$("developerSocialOpen").onclick=()=>showPage("developerSocialPage");$("developerSocialBack").onclick=()=>showPage("settings");$("suggestionsOpen").onclick=()=>showPage("suggestionsPage");$("suggestionsBack").onclick=()=>showPage("settings");$("settingsLogout").onclick=async()=>{if(currentUser&&confirm("هل تريد تسجيل الخروج؟")){await signOut(auth);showPage("home");resetAdminSequence();}};$("backBtn").onclick=()=>showPage("home");$("categoryBack").onclick=()=>showPage("gamePickerPage");$("buyBack").onclick=()=>showPage("home");$("loginBack").onclick=()=>showPage("home");$("chargeBack").onclick=()=>showPage("home");
 $("buyCard").addEventListener("click",e=>{if(!e.target.closest("button"))openDeveloperProfile();});$("buyCard").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDeveloperProfile();}});
 
 if($("themeToggle"))$("themeToggle").onclick=()=>setTheme(theme==="dark"?"light":"dark");$("arBtn").onclick=()=>setLang("ar");$("enBtn").onclick=()=>setLang("en");$("search").oninput=()=>{renderFeed();if($("categoryPage").classList.contains("active"))renderCategoryPage();};$("searchClear").onclick=()=>{$("search").value="";renderFeed();};
