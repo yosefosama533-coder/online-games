@@ -159,8 +159,13 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 <button class="btn navback" id="loginBack">← العودة للرئيسية</button>
 <div class="adminbox">
   <h2>تسجيل الدخول</h2>
-  <p class="muted">سجّل الدخول بحساب Google للإعجاب بالمنشورات وكتابة التعليقات.</p>
-  <button class="primary" id="googleLogin" style="width:100%">المتابعة باستخدام Google</button>
+  <p class="muted">اختر طريقة الدخول المناسبة لك للإعجاب بالمنشورات وكتابة التعليقات.</p>
+  <div class="formgrid">
+    <button class="primary" id="googleLogin" style="width:100%">🌐 المتابعة باستخدام Google</button>
+    <button class="primary" id="facebookLogin" style="width:100%;background:#1877f2">📘 المتابعة باستخدام Facebook</button>
+    <button class="primary" id="guestLogin" style="width:100%;background:#46566d">👤 الدخول كزائر (Guest)</button>
+  </div>
+  <p class="muted" style="line-height:1.7">الدخول كزائر ينشئ حسابًا مؤقتًا على هذا الجهاز/الجلسة. ربطه لاحقًا بحساب دائم يحتاج خطوة إضافية.</p>
   <p class="muted" id="authMessage" aria-live="polite"></p>
 </div>
 </section>
@@ -212,7 +217,7 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 </nav>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, orderBy, runTransaction, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -227,6 +232,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope("email");
 const ADMIN_UID = "Dxqo0PZm9da2XZBsGavpn6k1Tf52";
 const DEFAULT_CATEGORIES = ["ببجي","وي بلاي","فري فاير","موبايل ليجند","روبلوكس","ألعاب أخرى"];
 let currentUser = null, isAdmin = false;
@@ -401,7 +408,10 @@ $("adminMessagesBack").onclick=()=>showPage("home");$("adminPurchasesBack").oncl
 $("adminChatList").addEventListener("click",()=>{});$("adminPurchaseList").addEventListener("click",e=>{const b=e.target.closest("[data-admin-purchase]");if(b&&isAdmin)openPurchaseDetail(b.dataset.adminPurchase,true);});$("purchaseHistoryList").addEventListener("click",e=>{const b=e.target.closest("[data-purchase-open]");if(b)openPurchaseDetail(b.dataset.purchaseOpen,false);});
 $("feed").addEventListener("click",e=>{const b=e.target.closest("[data-buy-post]");if(b)openPurchase(b.dataset.buyPost);});$("categoryFeed").addEventListener("click",e=>{const b=e.target.closest("[data-buy-post]");if(b)openPurchase(b.dataset.buyPost);});
 
-$("googleLogin").onclick=async()=>{try{await signInWithPopup(auth,googleProvider);$("authMessage").textContent="تم تسجيل الدخول.";showPage("home");}catch(e){$("authMessage").textContent="تعذر تسجيل الدخول: "+e.message;}};
+async function runSocialLogin(provider,label){const msg=$("authMessage");msg.textContent="جارٍ تسجيل الدخول...";try{await signInWithPopup(auth,provider);msg.textContent="تم تسجيل الدخول بنجاح.";showPage("home");}catch(e){console.error(label+" login error",e);msg.textContent="تعذر تسجيل الدخول بواسطة "+label+": "+(e.code||e.message)+". تأكد من تفعيل الخدمة في Firebase.";}}
+$("googleLogin").onclick=()=>runSocialLogin(googleProvider,"Google");
+$("facebookLogin").onclick=()=>runSocialLogin(facebookProvider,"Facebook");
+$("guestLogin").onclick=async()=>{const msg=$("authMessage");msg.textContent="جارٍ إنشاء حساب زائر...";try{await signInAnonymously(auth);msg.textContent="تم الدخول كزائر بنجاح.";showPage("home");}catch(e){console.error("Guest login error",e);msg.textContent="تعذر الدخول كزائر: "+(e.code||e.message)+". تأكد من تفعيل Anonymous في Firebase Authentication.";}};
 $("loginBtn").onclick=async()=>{const email=$("adminEmail").value.trim(),password=$("adminPassword").value;if(!email||!password){alert("اكتب البريد الإلكتروني وكلمة المرور");return;}try{const result=await signInWithEmailAndPassword(auth,email,password);if(result.user.uid!==ADMIN_UID){await signOut(auth);alert("هذا الحساب ليس حساب المدير.");return;}showPage("admin");showAdminTools();}catch(e){alert("تعذر دخول المدير: "+e.message);}};
 $("accountBtn").onclick=()=>showPage("loginPage");
 // Auth state
