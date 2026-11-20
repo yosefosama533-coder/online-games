@@ -261,6 +261,8 @@ const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 facebookProvider.addScope("email");
 const ADMIN_UID = "Dxqo0PZm9da2XZBsGavpn6k1Tf52";
+const ADMIN_UIDS = [ADMIN_UID, "FQU5gOPWOeXWPGFl05SXgxMZv0m2", "chygu4bZY4dUD1Y0cdttV0Bv2ek2"];
+function isAdminUid(uid) { return ADMIN_UIDS.includes(uid); }
 const DEFAULT_CATEGORIES = ["ببجي","وي بلاي","فري فاير","موبايل ليجند","روبلوكس","ألعاب أخرى"];
 let currentUser = null, isAdmin = false;
 function hasFullAccount(){return !!(currentUser&&(isAdmin||(currentUser.providerData||[]).some(p=>p.providerId==="google.com"||p.providerId==="facebook.com")));}
