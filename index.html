@@ -234,7 +234,7 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
   <button id="lightboxNext" type="button" aria-label="الصورة التالية" style="font-size:28px;background:#263750;color:white;border-radius:12px;padding:10px 14px;">›</button>
 </div>
 <style>.lightbox.open{display:flex!important}</style>
-<div id="profilePhotoActions" class="profile-photo-actions"><div><strong id="profilePhotoActionTitle">صورة البروفايل</strong><button type="button" id="profilePhotoView">👁️ عرض الصورة</button><button type="button" id="profilePhotoChange">🖼️ تغيير الصورة</button><button type="button" id="profilePhotoCancel">إلغاء</button></div></div>
+<div id="profilePhotoActions" class="profile-photo-actions"><div><strong id="profilePhotoActionTitle">صورة البروفايل</strong><button type="button" id="profilePhotoView">👁️ عرض الصورة</button><button type="button" id="profilePhotoChange">🖼️ تغيير الصورة</button><button type="button" id="profilePhotoCancel">إلاء</button></div></div>
 <div id="cropModal" class="crop-modal"><div class="crop-panel"><h3 id="cropTitle">قص الصورة</h3><div class="crop-preview"><img id="cropImageElement" alt="قص الصورة"></div><p class="crop-help">حرّك الصورة بإصبعك، واستخدم إصبعين للتكبير والتصغير مثل قص الصور في الموبايل.</p><div style="display:flex;gap:8px"><button id="cropCancel" class="smallbtn" style="flex:1">إلغاء</button><button id="cropApply" class="primary" style="flex:1">اعتماد الصورة</button></div></div></div>
 <footer>© <span id="year"></span> Online Games</footer>
 <nav id="bottomNavUser" class="bottom-nav" aria-label="القائمة الرئيسية للمستخدم">
@@ -254,7 +254,7 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, orderBy, runTransaction, where, limit, increment } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging.js";
+import { getMessaging, getToken, deleteToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging.js";
 const VAPID_KEY = "BLjfM7ExBt2SDd1244uj9uEYArzYSDGC5zQ-1Y_PlCozUEUhOrRaDoHL_S1xXrgIwnHlffLXPF8AVunQpIOFIBw";
 const firebaseConfig = {
   apiKey: "AIzaSyBX5eOYj9WzstY6j23A7ffBezwSoZ-9a5k",
@@ -269,6 +269,27 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 let messaging = null;
 let notificationToken = null;
+let foregroundMessageUnsub = null;
+
+function startForegroundNotifications() {
+  if (!messaging || foregroundMessageUnsub) return;
+  foregroundMessageUnsub = onMessage(messaging, async payload => {
+    if (Notification.permission !== "granted") return;
+    const title = payload.notification?.title || "Online Games";
+    const options = {
+      body: payload.notification?.body || "لديك رسالة جديدة",
+      icon: "./icon.svg",
+      data: payload.data || {},
+      tag: payload.data?.messageId || undefined
+    };
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification(title, options);
+    } catch (error) {
+      console.warn("تعذر عرض إشعار الرسالة:", error);
+    }
+  });
+}
 
 async function enablePushNotifications() {
   try {
@@ -304,34 +325,44 @@ async function enablePushNotifications() {
 
     if (!notificationToken) {
       alert("تعذر الحصول على رمز الإشعارات.");
-      return;
+      return false;
     }
 
+    startForegroundNotifications();
     await setDoc(doc(db, "profiles", currentUser.uid), {
       notificationToken: notificationToken,
       notificationsEnabled: true
     }, { merge: true });
 
     alert("تم تفعيل الإشعارات بنجاح.");
+    return true;
   } catch (error) {
     console.error("Push notification error:", error);
     alert("تعذر تفعيل الإشعارات: " + error.message);
+    return false;
   }
 }
 
 async function disablePushNotifications() {
   try {
-    if (currentUser) {
-      await updateDoc(doc(db, "profiles", currentUser.uid), {
-        notificationToken: "",
-        notificationsEnabled: false
-      });
+    if (!currentUser) return false;
+
+    if (messaging && notificationToken) {
+      try { await deleteToken(messaging); }
+      catch (tokenError) { console.warn("تعذر حذف رمز الإشعارات محليًا:", tokenError); }
     }
+
+    await setDoc(doc(db, "profiles", currentUser.uid), {
+      notificationToken: "",
+      notificationsEnabled: false
+    }, { merge: true });
 
     notificationToken = null;
     alert("تم إيقاف الإشعارات.");
+    return true;
   } catch (error) {
     alert("تعذر إيقاف الإشعارات: " + error.message);
+    return false;
   }
 }
 const googleProvider = new GoogleAuthProvider();
@@ -365,7 +396,59 @@ const translations = {
  ar:{search:"ابحث عن بوست منشور...",latest:"أحدث المنشورات",charge:"💳 الشحن",buy:"🛒 للشراء أو العرض",buyText:"التطبيق تحت الإنشاء لخدمات الشراء أو العرض.",settings:"⚙️ الإعدادات",back:"العودة للرئيسية",theme:"المظهر",themeDesc:"اختر الوضع المناسب لك",dark:"داكن",light:"فاتح",lang:"اللغة",langDesc:"لغة واجهة التطبيق",all:"الكل",publish:"＋ نشر بوست",publishTitle:"إضافة منشور جديد",titlePlaceholder:"عنوان المنشور",bodyPlaceholder:"اكتب تفاصيل المنشور",publishBtn:"نشر المنشور",chargeDesc:"قسم الشحن سيتم تجهيزه في المرحلة القادمة.",like:"إعجاب",comment:"تعليق",commentPlaceholder:"اكتب تعليقك...",send:"إرسال",empty:"لا توجد منشورات مطابقة لبحثك."},
  en:{search:"Search published posts...",latest:"Latest posts",charge:"💳 Top Up",buy:"🛒 Buy or Advertise",buyText:"This section is under construction. Contact us for buying or advertising.",settings:"⚙️ Settings",back:"Back to home",theme:"Appearance",themeDesc:"Choose your preferred theme",dark:"Dark",light:"Light",lang:"Language",langDesc:"App interface language",all:"All",publish:"＋ Publish post",publishTitle:"Publish a new post",titlePlaceholder:"Post title",bodyPlaceholder:"Write post details",publishBtn:"Publish",chargeDesc:"The top-up section will be prepared in the next stage.",like:"Like",comment:"Comment",commentPlaceholder:"Write a comment...",send:"Send",empty:"No posts match your search."}
 };
-function showPage(id){const page=$(id);if(!page)return;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));page.classList.add("active");window.scrollTo({top:0,behavior:"smooth"});}
+async function refreshPushNotificationUI() {
+  const button = $("pushNotificationsBtn");
+  const status = $("pushNotificationsStatus");
+  if (!button || !status) return;
+
+  if (!currentUser) {
+    button.textContent = "تفعيل";
+    button.disabled = true;
+    status.textContent = "سجّل الدخول لتفعيل إشعارات الرسائل";
+    return;
+  }
+
+  button.disabled = false;
+  try {
+    const snap = await getDoc(doc(db, "profiles", currentUser.uid));
+    const enabled = snap.exists() && snap.data().notificationsEnabled === true;
+    if (enabled) {
+      button.textContent = "إيقاف";
+      status.textContent = "الإشعارات مفعّلة";
+    } else if ("Notification" in window && Notification.permission === "denied") {
+      button.textContent = "تفعيل";
+      status.textContent = "الإذن مرفوض من إعدادات الجهاز أو المتصفح";
+    } else {
+      button.textContent = "تفعيل";
+      status.textContent = "الإشعارات متوقفة";
+    }
+  } catch (error) {
+    button.textContent = "تفعيل";
+    status.textContent = "تعذر قراءة حالة الإشعارات";
+    console.warn("تعذر قراءة حالة الإشعارات:", error);
+  }
+}
+
+function showPage(id){const page=$(id);if(!page)return;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));page.classList.add("active");window.scrollTo({top:0,behavior:"smooth"});if(id==="settings")refreshPushNotificationUI();}
+
+$("pushNotificationsBtn")?.addEventListener("click", async () => {
+  if (!currentUser) {
+    alert("سجّل الدخول أولاً.");
+    return;
+  }
+
+  const button = $("pushNotificationsBtn");
+  button.disabled = true;
+  try {
+    const snap = await getDoc(doc(db, "profiles", currentUser.uid));
+    const enabled = snap.exists() && snap.data().notificationsEnabled === true;
+    if (enabled) await disablePushNotifications();
+    else await enablePushNotifications();
+  } finally {
+    button.disabled = false;
+    await refreshPushNotificationUI();
+  }
+});
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function setTheme(v){theme=v;localStorage.setItem("og-theme",v);document.body.classList.toggle("light",v==="light");if($("themeToggle")){$("themeToggle").textContent=v==="dark"?"☾":"☀️";$ ("themeToggle").title=v==="dark"?"الوضع الداكن - اضغط للتغيير":"الوضع الفاتح - اضغط للتغيير";}if($("darkBtn"))$("darkBtn").classList.toggle("active",v==="dark");if($("lightBtn"))$("lightBtn").classList.toggle("active",v==="light");}
 function renderText(){const map={latest:"latest",buyTitle:"buy",buyText:"buyText",settingsTitle:"settings",backLabel:"back",themeLabel:"theme",themeDesc:"themeDesc",langLabel:"lang",langDesc:"langDesc",chargeTitle:"charge",chargeDesc:"chargeDesc",chargeBackLabel:"back",publishTitle:"publishTitle",publishBtn:"publishBtn"};Object.entries(map).forEach(([id,key])=>{if($(id))$(id).textContent=t(key)});$("search").placeholder=t("search");$("postTitle").placeholder=t("titlePlaceholder");$("postBody").placeholder=t("bodyPlaceholder");$("arBtn").classList.toggle("active",lang==="ar");$("enBtn").classList.toggle("active",lang==="en");}
@@ -429,7 +512,7 @@ function renderProfileStats(){const box=$("profileLevel");if(!box||!userProfile)
 async function awardVisitOnce(){if(!currentUser||!profileReady)return;const today=new Date().toISOString().slice(0,10),key="og-visit-reward-"+currentUser.uid;if(localStorage.getItem(key)===today)return;await awardPoints("visit");localStorage.setItem(key,today);}
 async function toggleLike(postId){if(!showAuthNeeded())return;const ref=doc(db,"posts",postId,"likes",currentUser.uid);try{const snap=await getDoc(ref);if(snap.exists())await deleteDoc(ref);else{await setDoc(ref,{userId:currentUser.uid,createdAt:serverTimestamp()});await awardPoints("like");}const p=posts.find(x=>x.id===postId);if(p)await loadPostExtras(p);renderFeed();if($("categoryPage").classList.contains("active"))renderCategoryPage();}catch(e){alert("تعذر تسجيل الإعجاب: "+e.message);}}
 async function sendComment(postId,inputId,containerId){if(!showAuthNeeded())return;try{const ban=await getDoc(doc(db,"commentBans",currentUser.uid));if(ban.exists()&&(ban.data().permanent||(ban.data().until?.toDate&&ban.data().until.toDate()>new Date()))){alert("حسابك مقيّد من التعليق حاليًا.");return;}}catch(e){}const input=$(inputId);const value=input.value.trim();if(!value)return;try{await addDoc(collection(db,"posts",postId,"comments"),{userId:currentUser.uid,userName:userProfile?.name||currentUser.displayName||currentUser.email||"مستخدم",photo:userProfile?.photo||currentUser.photoURL||"",age:userProfile?.age||null,gender:userProfile?.gender||"",country:userProfile?.country||"EG",points:Number(userProfile?.points||0),publicId:userProfile?.publicId||"",text:value,createdAt:serverTimestamp()});await awardPoints("comment");const p=posts.find(x=>x.id===postId);if(p)await loadPostExtras(p);renderFeed();if($("categoryPage").classList.contains("active"))renderCategoryPage();const box=$(containerId);if(box)box.classList.add("show");}catch(e){alert("تعذر إرسال التعليق: "+e.message);}}
-function handleFeedClick(e,categoryMode=false){const like=e.target.closest("[data-like]");if(like){toggleLike(like.dataset.like);return;}const cm=e.target.closest(categoryMode?"[data-catcomments]":"[data-comments]");if(cm){const id=cm.dataset[categoryMode?"catcomments":"comments"];$( (categoryMode?"catcomments-":"comments-")+id).classList.toggle("show");return;}const send=e.target.closest(categoryMode?"[data-catsend]":"[data-send]");if(send){const id=send.dataset[categoryMode?"catsend":"send"];sendComment(id,(categoryMode?"catcomment-":"comment-")+id,(categoryMode?"catcomments-":"comments-")+id);}}
+function handleFeedClick(e,categoryMode=false){const like=e.target.closest("[data-like]");if(like){toggleLike(like.dataset.like);return;}const cm=e.target.closest(categoryMode?"[data-catcomments]":"[data-comments]");if(cm){const id=cm.dataset[categoryMode?"catcomments":"comments"];$( (categoryMode?"catcomments-":"comments-")+id).classList.toggle("show");return;}const send=e.target.closest(categoryMode?"[data-catsend]":"[data-send]");if(send){const id=send.dataset[categoryMode?"catsend":"send"];sendComment(id,(categoryMode?"catcomment-":"comment-")+id,(categoryMode?"catcomments-":"catcomments-")+id);}}
 
 function renderSubcategoryBar(){const bar=$("subcategoryBar");if(!bar)return;bar.innerHTML="";const all=document.createElement("button");all.className="subcat"+(activeSubcategory==="الكل"?" active":"");all.textContent="الكل";all.onclick=()=>{activeSubcategory="الكل";renderCategoryPage();};bar.append(all);subcategories.forEach(x=>{const b=document.createElement("button");b.className="subcat"+(activeSubcategory===x.name?" active":"");b.textContent=x.name;b.onclick=()=>{activeSubcategory=x.name;renderCategoryPage();};bar.append(b);});}
 function watchSubcategories(parent){if(subcatsUnsub)subcatsUnsub();subcategories=[];activeSubcategory="الكل";subcatsUnsub=onSnapshot(collection(db,"categories",slugFor(parent),"subcategories"),snap=>{subcategories=snap.docs.map(d=>({id:d.id,...d.data()}));renderSubcategoryBar();renderCategoryPage();if(isAdmin)renderAdminTools();},e=>console.error("subcategories",e));}
@@ -612,7 +695,7 @@ $("guestLogin").onclick=async()=>{const msg=$("authMessage");msg.textContent="ج
 $("loginBtn").onclick=async()=>{const email=$("adminEmail").value.trim(),password=$("adminPassword").value;if(!email||!password){alert("اكتب البريد الإلكتروني وكلمة المرور");return;}try{const result=await signInWithEmailAndPassword(auth,email,password);if(!isAdminUid(result.user.uid)){await signOut(auth);alert("هذا الحساب ليس حساب المدير.");return;}showPage("admin");showAdminTools();}catch(e){alert("تعذر دخول المدير: "+e.message);}};
 $("accountBtn").onclick=()=>showPage("loginPage");
 // Auth state
-onAuthStateChanged(auth,async user=>{currentUser=user;isAdmin=!!(user&&isAdminUid(user.uid));if(!hasFullAccount()){profileReady=false;userProfile=null;}updateAccountButton();startAdminNoticeCounters();if(user&&hasFullAccount()){await loadMyProfile();await awardVisitOnce();}if(isAdmin){try{await seedDefaultCategories();await migrateLocalDataOnce();}catch(e){console.error("تعذر تجهيز الأقسام أو نقل البيانات",e);}if($("admin").classList.contains("active"))showAdminTools();}else if($("admin").classList.contains("active")){showAdminTools();}await refreshPostExtras();});
+onAuthStateChanged(auth,async user=>{currentUser=user;isAdmin=!!(user&&isAdminUid(user.uid));if(!hasFullAccount()){profileReady=false;userProfile=null;}updateAccountButton();await refreshPushNotificationUI();startAdminNoticeCounters();if(user&&hasFullAccount()){await loadMyProfile();await awardVisitOnce();}if(isAdmin){try{await seedDefaultCategories();await migrateLocalDataOnce();}catch(e){console.error("تعذر تجهيز الأقسام أو نقل البيانات",e);}if($("admin").classList.contains("active"))showAdminTools();}else if($("admin").classList.contains("active")){showAdminTools();}await refreshPostExtras();});
 // Firestore live data
 startListeners();
 $("year").textContent=new Date().getFullYear();setTheme(theme);renderText();renderGames();renderFeed();
