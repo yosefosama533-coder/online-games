@@ -103,18 +103,6 @@ body:has(#chatPage.chat-screen.active){overflow:hidden}
 .profile-photo-actions button{padding:12px;border-radius:10px;background:var(--panel2);color:var(--text);border:1px solid var(--line)}
 .profile-theme-toggle{width:40px;height:40px;border-radius:50%;background:var(--panel2);color:var(--text);border:1px solid var(--line);font-size:21px;display:grid;place-items:center}
 .profile-page-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.profile-cover{height:190px;width:100%;border-radius:15px;object-fit:cover;background:var(--panel2);cursor:zoom-in;border:1px solid var(--line)}.profile-hero{position:relative;text-align:center;padding-bottom:12px}.profile-avatar-large{width:112px;height:112px;border-radius:50%;object-fit:cover;border:5px solid var(--panel);background:var(--panel2);margin-top:-58px;position:relative;cursor:zoom-in}.profile-details{text-align:center;margin-top:2px}.profile-details h2{margin:5px 0}.profile-bio{white-space:pre-wrap;line-height:1.8;text-align:center;margin:12px auto;max-width:560px;color:var(--muted)}.profile-edit-fields{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}.profile-edit-fields[hidden]{display:none}.crop-modal{position:fixed;inset:0;z-index:10010;background:#000d;display:none;align-items:center;justify-content:center;padding:14px}.crop-modal.open{display:flex}.crop-panel{width:min(520px,100%);background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px}.crop-preview{height:min(58vh,460px);min-height:260px;background:#111;overflow:hidden;border-radius:12px;display:flex;align-items:center;justify-content:center;touch-action:none}.crop-preview img{display:block;max-width:100%;max-height:100%;user-select:none}.cropper-container{direction:ltr!important;max-width:100%}.cropper-view-box,.cropper-face{border-radius:0}.cropper-point{width:10px;height:10px}.crop-controls{display:flex;justify-content:space-between;gap:8px;margin:12px 0;color:var(--muted);font-size:12px}.crop-controls span{flex:1;text-align:center}.crop-help{font-size:12px;color:var(--muted);text-align:center;margin:8px 0}.profile-lock-note{font-size:12px;color:var(--muted);margin-top:5px}.profile-contact-actions{display:flex;gap:9px;margin-top:14px}.profile-contact-actions button{flex:1;min-width:0;white-space:normal;line-height:1.4}.guarantee-card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px;margin:10px 0}.guarantee-card h3{margin:0 0 8px;color:var(--gold)}.guarantee-card p{margin:0;white-space:pre-wrap;line-height:1.8}.guarantee-admin-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.guarantee-admin-row>span{min-width:0;overflow-wrap:anywhere}
-
-.chat-order-open{flex:0 0 auto;padding:9px 11px;border-radius:11px;background:#168c67;color:#fff;font-size:12px;font-weight:800;white-space:nowrap}
-.order-category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin:14px 0}
-.order-category-btn{min-height:66px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);font-weight:800;text-align:center}
-.order-category-btn:active{transform:scale(.98);background:var(--blue);color:#fff}
-.order-breadcrumb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0;color:var(--muted);font-size:13px}
-.order-breadcrumb button{background:transparent;color:var(--blue);padding:2px}
-.order-form-card{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel2)}
-.order-admin-item{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--line)}
-.order-admin-actions{display:flex;gap:6px;flex-wrap:wrap}
-.order-request-card{padding:13px;margin:10px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
-.order-request-card img{display:block;max-width:100%;max-height:220px;object-fit:contain;border-radius:9px;margin-top:8px}
 </style></head>
 <body>
 <button class="btn" id="installAppBtn" type="button" hidden>📲 تحميل التطبيق</button>
@@ -191,12 +179,12 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
     <div class="admin-section"><h3>إدارة الأقسام الفرعية</h3><select id="subParent" class="field"></select><div id="adminSubcategories"></div><div class="category-tools"><input id="newSubcategory" class="field" placeholder="اسم القسم الفرعي"><button class="primary" id="addSubcategory">إضافة قسم فرعي</button></div></div>
     <div class="admin-section"><h3>إدارة التعليقات</h3><button class="primary" id="openAdminComments">عرض جميع التعليقات</button></div>
     <div class="admin-section"><h3>تقييد التعليقات</h3><button class="primary" id="openAdminBans">إدارة تقييد الأعضاء</button></div>
-    <div class="admin-section"><h3>إدارة قوائم وضع طلب بيع</h3><p class="muted">أضف قائمة رئيسية أو اختر قائمة موجودة لإضافة قائمة بداخلها. أي قائمة بدون قوائم فرعية ستفتح نموذج الطلب للمستخدم.</p><select id="sellOrderParent" class="field"><option value="">قائمة رئيسية (بدون أب)</option></select><input id="sellOrderCategoryName" class="field" maxlength="70" placeholder="اسم القائمة الجديدة"><button type="button" class="primary" id="addSellOrderCategory">إضافة القائمة</button><p id="sellOrderAdminMessage" class="muted"></p><div id="sellOrderAdminTree"></div></div><div class="admin-section"><h3>طلبات وضع طلب بيع الواردة</h3><button type="button" class="smallbtn" id="refreshSellOrders">تحديث الطلبات</button><div id="adminSellOrders"><p class="muted">جارٍ التحميل...</p></div></div><div class="admin-section"><h3>إدارة ضمان التعامل</h3><input id="guaranteeTitle" class="field" maxlength="100" placeholder="عنوان ضمان التعامل"><label class="muted" for="guaranteeImage">اختر صورة من الموبايل</label><input id="guaranteeImage" class="field" type="file" accept="image/*"><button class="primary" id="addGuarantee">إضافة ضمان التعامل</button><p id="guaranteeAdminMessage" class="muted"></p><div id="adminGuarantees"></div></div><div class="admin-section"><h3>إدارة نبذة التطبيق</h3><textarea id="aboutDescription" class="field" rows="5" placeholder="اكتب وصف التطبيق الذي سيظهر للمستخدمين"></textarea><input id="aboutVideo" class="field" type="url" placeholder="رابط فيديو الشرح (YouTube أو MP4)"><button class="primary" id="saveAbout">حفظ نبذة التطبيق</button><p id="aboutAdminMessage" class="muted"></p></div>
+    <div class="admin-section"><h3>إدارة ضمان التعامل</h3><input id="guaranteeTitle" class="field" maxlength="100" placeholder="عنوان ضمان التعامل"><label class="muted" for="guaranteeImage">اختر صورة من الموبايل</label><input id="guaranteeImage" class="field" type="file" accept="image/*"><button class="primary" id="addGuarantee">إضافة ضمان التعامل</button><p id="guaranteeAdminMessage" class="muted"></p><div id="adminGuarantees"></div></div><div class="admin-section"><h3>إدارة نبذة التطبيق</h3><textarea id="aboutDescription" class="field" rows="5" placeholder="اكتب وصف التطبيق الذي سيظهر للمستخدمين"></textarea><input id="aboutVideo" class="field" type="url" placeholder="رابط فيديو الشرح (YouTube أو MP4)"><button class="primary" id="saveAbout">حفظ نبذة التطبيق</button><p id="aboutAdminMessage" class="muted"></p></div>
   </div>
 </div>
 </section>
 
-<section id="sellOrderPage" class="page"><button class="btn navback" id="sellOrderBack">← العودة للدردشة</button><div class="adminbox"><h2>🛍️ وضع طلب بيع</h2><p class="muted">من فضلك اختر لعبة</p><div id="sellOrderBreadcrumb" class="order-breadcrumb"></div><div id="sellOrderCategoryList" class="order-category-grid"></div><form id="sellOrderForm" class="order-form-card" hidden><h3>من فضلك قم بملء البيانات التالية</h3><label class="muted" for="sellOrderGameName">1- اسم اللعبة</label><input id="sellOrderGameName" class="field" maxlength="80" required placeholder="اسم اللعبة"><label class="muted" for="sellOrderPhone">2- رقم الموبايل للتواصل معك</label><input id="sellOrderPhone" class="field" type="tel" inputmode="tel" maxlength="25" required placeholder="رقم الموبايل"><label class="muted" for="sellOrderImage">صورة اللعبة الخاصة بك</label><input id="sellOrderImage" class="field" type="file" accept="image/*" required><label class="muted" for="sellOrderSpecs">3- المواصفات</label><textarea id="sellOrderSpecs" class="field" rows="4" maxlength="1500" required placeholder="اكتب مواصفات اللعبة والتفاصيل"></textarea><label class="muted" for="sellOrderPrice">4- السعر الذي في خيالك (اختياري)</label><input id="sellOrderPrice" class="field" type="number" min="0" step="0.01" placeholder="اتركه فارغًا إذا لم تحدد سعرًا"><button type="submit" class="primary" id="submitSellOrder">إرسال الطلب</button><p id="sellOrderMessage" class="muted" aria-live="polite"></p></form></div></section><section id="adminCommentsPage" class="page"><button class="btn navback" id="commentsAdminBack">← العودة للوحة التحكم</button><div class="adminbox"><h2>جميع التعليقات</h2><div id="allCommentsList"><p class="muted">جارٍ التحميل...</p></div></div></section>
+<section id="adminCommentsPage" class="page"><button class="btn navback" id="commentsAdminBack">← العودة للوحة التحكم</button><div class="adminbox"><h2>جميع التعليقات</h2><div id="allCommentsList"><p class="muted">جارٍ التحميل...</p></div></div></section>
 <section id="adminBansPage" class="page"><button class="btn navback" id="bansAdminBack">← العودة للوحة التحكم</button><div class="adminbox"><h2>تقييد التعليقات</h2><p class="muted">أدخل ID العضو، ثم اختر مدة منعه من كتابة التعليقات.</p><div class="formgrid"><input id="banPublicId" class="field" placeholder="ID العضو"><select id="banDuration" class="field"><option value="6">6 ساعات</option><option value="24">24 ساعة</option><option value="48">48 ساعة</option><option value="168">أسبوع</option><option value="720">شهر (30 يومًا)</option><option value="permanent">دائم</option></select><button class="primary" id="applyBan">تطبيق التقييد</button><p id="banMessage" class="muted"></p></div><h3>الأعضاء المقيّدون</h3><div id="activeBansList"></div></div></section>
 <section id="loginPage" class="page">
 <button class="btn navback" id="loginBack">← العودة للرئيسية</button>
@@ -230,7 +218,7 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 <div class="buy"><h3 id="buyPageTitle">🛒 للشراء أو العرض</h3><p id="buyPageText">التطبيق تحت الإنشاء لخدمات الشراء أو العرض.</p><button class="primary" id="developerContactBtn2" type="button">للتواصل مع المطور</button></div>
 </section>
 <section id="chatPage" class="page chat-screen">
-  <header class="chat-topbar"><button class="chat-back" id="chatBack" type="button" aria-label="العودة">‹</button><button type="button" class="chat-order-open" id="sellOrderOpen">🛍️ وضع طلب</button><button type="button" class="chat-heading-wrap" id="chatOpenProfile" aria-label="فتح الملف الشخصي"><span class="chat-heading-avatar">💬</span><span id="chatHeading">الدردشة مع المطور</span></button><span class="chat-top-spacer"></span></header>
+  <header class="chat-topbar"><button class="chat-back" id="chatBack" type="button" aria-label="العودة">‹</button><button type="button" class="chat-heading-wrap" id="chatOpenProfile" aria-label="فتح الملف الشخصي"><span class="chat-heading-avatar">💬</span><span id="chatHeading">الدردشة مع المطور</span></button><span class="chat-top-spacer"></span></header>
   <div id="chatMessages" class="chat-messages"><p class="muted">ابدأ المحادثة برسالة للمطور.</p></div>
   <div class="chat-bottom"><p id="chatError" class="chat-error"></p><div class="chat-composer">
     <label class="chat-camera-plus" for="chatImageInput" title="إرفاق صورة" aria-label="إرفاق صورة"><span class="plus-mark">+</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5 10 3h4l1.5 2H19a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3.5Z"/><circle cx="12" cy="12" r="3.5"/></svg></label>
@@ -401,7 +389,6 @@ let theme = localStorage.getItem("og-theme") || "dark";
 let onlineClicks=0, gamesClicks=0, adminSequenceReady=false;
 let postsUnsub=null, catsUnsub=null, loadingPosts=false;
 let subcategories=[], activeSubcategory="الكل", subcatsUnsub=null, userProfile=null, profileReady=false;
-let sellOrderCategoriesCache=[],sellOrderCategoryPath=[],sellOrderReturnPage="chatPage",sellOrderSubmitting=false;
 const defaultAvatar="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23304760'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23b8c7d9'/%3E%3Cpath d='M15 95c3-23 17-35 35-35s32 12 35 35' fill='%23b8c7d9'/%3E%3C/svg%3E";
 const COUNTRY_OPTIONS = [
  ["EG","🇪🇬","مصر"],["SA","🇸🇦","السعودية"],["AE","🇦🇪","الإمارات"],["KW","🇰🇼","الكويت"],["QA","🇶🇦","قطر"],["BH","🇧🇭","البحرين"],["OM","🇴🇲","عُمان"],["JO","🇯🇴","الأردن"],["IQ","🇮🇶","العراق"],["LB","🇱🇧","لبنان"],["SY","🇸🇾","سوريا"],["PS","🇵🇸","فلسطين"],["YE","🇾🇪","اليمن"],["MA","🇲🇦","المغرب"],["DZ","🇩🇿","الجزائر"],["TN","🇹🇳","تونس"],["LY","🇱🇾","ليبيا"],["SD","🇸🇩","السودان"],["US","🇺🇸","أمريكا"],["GB","🇬🇧","بريطانيا"],["TR","🇹🇷","تركيا"],["FR","🇫🇷","فرنسا"],["DE","🇩🇪","ألمانيا"]
@@ -578,96 +565,7 @@ $("cropApply").onclick=()=>{if(!cropperInstance)return;try{const canvas=cropperI
 $("profilePhoto").onchange=e=>startCrop(e.target.files?.[0],"avatar");$("profileCover").onchange=e=>startCrop(e.target.files?.[0],"cover");$("profileCover").onchange=e=>startCrop(e.target.files?.[0],"cover");
 function renderAdminSubcategories(){const parent=$("subParent")?.value||categories.find(x=>x!=="الكل");if(!parent)return;const box=$("adminSubcategories");if(!box)return;box.innerHTML=subcategories.map(x=>`<div class="admin-post"><span>${escapeHtml(x.name)}</span><button class="smallbtn" data-edit-sub="${escapeHtml(x.id)}">تعديل</button><button class="danger" data-del-sub="${escapeHtml(x.id)}">حذف</button></div>`).join("")||'<p class="muted">لا توجد أقسام فرعية.</p>';}
 
-async function loadSellOrderCategories(){
-  try{
-    const snap=await getDocs(collection(db,"sellOrderCategories"));
-    sellOrderCategoriesCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
-    return sellOrderCategoriesCache;
-  }catch(e){console.error("sell order categories",e);throw e;}
-}
-function sellOrderCategoryLabel(id){
-  const item=sellOrderCategoriesCache.find(x=>x.id===id);
-  if(!item)return "قائمة";
-  const names=[item.name];let parent=item.parentId,guard=0;
-  while(parent&&guard++<20){const p=sellOrderCategoriesCache.find(x=>x.id===parent);if(!p)break;names.unshift(p.name);parent=p.parentId;}
-  return names.join(" / ");
-}
-function renderSellOrderAdmin(){
-  const select=$("sellOrderParent"),box=$("sellOrderAdminTree");
-  if(!select||!box)return;
-  const old=select.value;
-  select.innerHTML='<option value="">قائمة رئيسية (بدون أب)</option>'+sellOrderCategoriesCache.map(x=>`<option value="${escapeHtml(x.id)}">${escapeHtml(sellOrderCategoryLabel(x.id))}</option>`).join("");
-  if(sellOrderCategoriesCache.some(x=>x.id===old))select.value=old;
-  box.innerHTML=sellOrderCategoriesCache.length?sellOrderCategoriesCache.map(x=>`<div class="order-admin-item"><span>${"　".repeat(Math.min(5,sellOrderCategoryLabel(x.id).split(" / ").length-1))}📁 ${escapeHtml(sellOrderCategoryLabel(x.id))}</span><span class="order-admin-actions"><button type="button" class="smallbtn" data-edit-sell-category="${escapeHtml(x.id)}">تعديل الاسم</button><button type="button" class="danger" data-delete-sell-category="${escapeHtml(x.id)}">حذف</button></span></div>`).join(""):'<p class="muted">لم تتم إضافة قوائم بعد.</p>';
-}
-async function refreshSellOrderAdmin(){
-  if(!isAdmin)return;
-  try{await loadSellOrderCategories();renderSellOrderAdmin();await loadAdminSellOrders();}
-  catch(e){$("sellOrderAdminMessage").textContent="تعذر تحميل القوائم: "+e.message;}
-}
-function renderSellOrderUser(){
-  const list=$("sellOrderCategoryList"),form=$("sellOrderForm"),crumb=$("sellOrderBreadcrumb");
-  if(!list||!form||!crumb)return;
-  const currentId=sellOrderCategoryPath.at(-1)||"";
-  const current=sellOrderCategoriesCache.find(x=>x.id===currentId);
-  const children=sellOrderCategoriesCache.filter(x=>(x.parentId||"")===currentId);
-  crumb.innerHTML=`<button type="button" data-order-root>اختر لعبة</button>`+sellOrderCategoryPath.map((id,i)=>`<span>‹</span><button type="button" data-order-crumb="${i}">${escapeHtml(sellOrderCategoriesCache.find(x=>x.id===id)?.name||"قائمة")}</button>`).join("");
-  if(current&&!children.length){
-    list.innerHTML="";
-    form.hidden=false;
-    if(!$("sellOrderGameName").value.trim())$("sellOrderGameName").value=current.name||"";
-    return;
-  }
-  form.hidden=true;
-  list.innerHTML=children.length?children.map(x=>`<button type="button" class="order-category-btn" data-order-category="${escapeHtml(x.id)}">🎮<br>${escapeHtml(x.name)}</button>`).join(""):'<p class="muted">لا توجد قوائم هنا حتى الآن.</p>';
-}
-async function openSellOrderPage(){
-  if(!currentUser){showPage("loginPage");return;}
-  sellOrderReturnPage=isAdmin?"adminMessagesPage":"chatPage";
-  sellOrderCategoryPath=[];
-  $("sellOrderForm").reset();
-  $("sellOrderForm").hidden=true;
-  $("sellOrderMessage").textContent="";
-  showPage("sellOrderPage");
-  $("sellOrderCategoryList").innerHTML='<p class="muted">جارٍ تحميل قوائم الألعاب...</p>';
-  try{await loadSellOrderCategories();renderSellOrderUser();}
-  catch(e){$("sellOrderCategoryList").textContent="تعذر تحميل القوائم: "+e.message;}
-}
-async function submitSellOrder(e){
-  e.preventDefault();
-  if(!currentUser||sellOrderSubmitting)return;
-  const gameName=$("sellOrderGameName").value.trim(),phone=$("sellOrderPhone").value.trim(),file=$("sellOrderImage").files?.[0],specs=$("sellOrderSpecs").value.trim(),priceText=$("sellOrderPrice").value.trim();
-  if(!gameName||!phone||!file||!specs){$("sellOrderMessage").textContent="من فضلك أكمل اسم اللعبة ورقم الموبايل والصورة والمواصفات.";return;}
-  if(priceText&&(!Number.isFinite(Number(priceText))||Number(priceText)<0)){$("sellOrderMessage").textContent="اكتب سعرًا صحيحًا أو اتركه فارغًا.";return;}
-  try{
-    if(!file.type.startsWith("image/"))throw new Error("اختر صورة للعبة.");
-    sellOrderSubmitting=true;$("submitSellOrder").disabled=true;$("sellOrderMessage").textContent="جارٍ إرسال الطلب...";
-    const image=await compressImage(file,360000,900,.55);
-    await addDoc(collection(db,"sellOrders"),{
-      userId:currentUser.uid,
-      userName:userProfile?.name||currentUser.displayName||"مستخدم",
-      categoryPath:sellOrderCategoryPath.map(id=>({id,name:sellOrderCategoriesCache.find(x=>x.id===id)?.name||""})),
-      gameName,phone,image,specs,
-      ...(priceText?{suggestedPrice:Number(priceText)}:{}),
-      status:"جديد",createdAt:serverTimestamp()
-    });
-    $("sellOrderMessage").textContent="تم إرسال طلبك بنجاح، وسيتم التواصل معك.";
-    $("sellOrderForm").reset();
-    setTimeout(()=>showPage(sellOrderReturnPage),1100);
-  }catch(err){$("sellOrderMessage").textContent="تعذر إرسال الطلب: "+err.message;}
-  finally{sellOrderSubmitting=false;$("submitSellOrder").disabled=false;}
-}
-async function loadAdminSellOrders(){
-  if(!isAdmin)return;
-  const box=$("adminSellOrders");if(!box)return;
-  box.innerHTML='<p class="muted">جارٍ تحميل الطلبات...</p>';
-  try{
-    const snap=await getDocs(collection(db,"sellOrders"));
-    const rows=snap.docs.sort((a,b)=>(b.data().createdAt?.toMillis?.()||0)-(a.data().createdAt?.toMillis?.()||0));
-    box.innerHTML=rows.length?rows.map(d=>{const x=d.data();const path=(x.categoryPath||[]).map(c=>c.name).join(" / ");return `<article class="order-request-card"><strong>${escapeHtml(x.gameName||"طلب بيع")}</strong><p class="muted">${escapeHtml(x.userName||"مستخدم")} · ${escapeHtml(path)}</p><p>رقم التواصل: <a href="tel:${escapeHtml(x.phone||"")}">${escapeHtml(x.phone||"")}</a></p><p style="white-space:pre-wrap">${escapeHtml(x.specs||"")}</p>${x.suggestedPrice!==undefined?`<p>السعر المقترح: ${money(x.suggestedPrice)}</p>`:'<p class="muted">لم يحدد سعرًا</p>'}${x.image?`<img src="${escapeHtml(x.image)}" alt="صورة اللعبة" loading="lazy">`:''}<small class="muted">${x.createdAt?.toDate?x.createdAt.toDate().toLocaleString("ar-EG"):""}</small><div style="text-align:left;margin-top:8px"><button type="button" class="danger" data-delete-sell-order="${escapeHtml(d.id)}">حذف الطلب</button></div></article>`;}).join(""):'<p class="muted">لا توجد طلبات حتى الآن.</p>';
-  }catch(e){box.textContent="تعذر تحميل الطلبات: "+e.message;}
-}
-function showAdminTools(){if(isAdmin){$("adminLogin").hidden=true;$("adminWorkspace").hidden=false;renderAdminTools();loadAboutInfo();loadAdminGuarantees();refreshSellOrderAdmin();const parent=$("subParent")?.value;if(parent)watchSubcategories(parent);}else{$("adminWorkspace").hidden=true;$("adminLogin").hidden=false;}}
+function showAdminTools(){if(isAdmin){$("adminLogin").hidden=true;$("adminWorkspace").hidden=false;renderAdminTools();loadAboutInfo();loadAdminGuarantees();const parent=$("subParent")?.value;if(parent)watchSubcategories(parent);}else{$("adminWorkspace").hidden=true;$("adminLogin").hidden=false;}}
 function renderAdminTools(){$("adminPosts").innerHTML=posts.map(p=>`<div class="admin-post"><span>${escapeHtml(p.title)}${Number(p.price)>0?" · "+escapeHtml(p.price):""}</span><button class="smallbtn" data-edit-post="${escapeHtml(p.id)}">تعديل</button><button class="danger" data-delete-post="${escapeHtml(p.id)}">حذف</button></div>`).join("")||'<p class="muted">لا توجد منشورات</p>';$("adminCategories").innerHTML=categories.filter(c=>c!=="الكل").map(c=>`<div class="admin-post"><span>${escapeHtml(c)}</span><button class="smallbtn" data-edit-category="${escapeHtml(c)}">تعديل</button><button class="danger" data-delete-category="${escapeHtml(c)}">حذف</button></div>`).join("");const sel=$("subParent");if(sel){const old=sel.value;sel.innerHTML=categories.filter(c=>c!=="الكل").map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");if(categories.includes(old))sel.value=old;renderAdminSubcategories();}}
 async function loadAboutInfo(){try{const snap=await getDoc(doc(db,"appInfo","about"));const data=snap.exists()?snap.data():{};$("aboutDescriptionView").textContent=data.description||"لم تتم إضافة نبذة التطبيق بعد.";const url=(data.video||"").trim();const holder=$("aboutVideoView");holder.innerHTML="";if(url){const yt=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);if(yt){holder.innerHTML=`<iframe class="about-video" src="https://www.youtube-nocookie.com/embed/${yt[1]}" title="فيديو شرح التطبيق" allowfullscreen loading="lazy"></iframe>`;}else if(/^https?:\/\/.+\.(mp4|webm|ogg)(?:\?.*)?$/i.test(url)){holder.innerHTML=`<video class="about-video" controls playsinline src="${escapeHtml(url)}"></video>`;}else{holder.innerHTML=`<p class="muted">رابط الفيديو غير صالح. استخدم رابط YouTube أو رابط MP4 مباشر.</p>`;}}if(isAdmin){$("aboutDescription").value=data.description||"";$("aboutVideo").value=data.video||"";}}catch(e){console.error("about",e);$("aboutDescriptionView").textContent="تعذر تحميل نبذة التطبيق.";}}
 $("saveAbout").onclick=async()=>{if(!isAdmin)return;const description=$("aboutDescription").value.trim(),video=$("aboutVideo").value.trim();if(video&&!/^https?:\/\//i.test(video)){alert("أدخل رابط فيديو يبدأ بـ https:// أو http://");return;}try{await setDoc(doc(db,"appInfo","about"),{description,video,updatedAt:serverTimestamp()});$("aboutAdminMessage").textContent="تم حفظ نبذة التطبيق.";await loadAboutInfo();}catch(e){$("aboutAdminMessage").textContent="تعذر الحفظ: "+e.message;}};
@@ -677,28 +575,6 @@ $("addGuarantee").onclick=async()=>{if(!isAdmin)return;const title=$("guaranteeT
 $("adminGuarantees").addEventListener("click",async e=>{if(!isAdmin)return;const edit=e.target.closest("[data-edit-guarantee]"),change=e.target.closest("[data-change-guarantee-image]"),del=e.target.closest("[data-delete-guarantee]");if(edit){try{const ref=doc(db,"dealGuarantees",edit.dataset.editGuarantee),snap=await getDoc(ref);if(!snap.exists())return;const title=prompt("تعديل العنوان:",snap.data().title||"");if(title===null)return;if(!title.trim()){alert("العنوان مطلوب.");return;}await updateDoc(ref,{title:title.trim(),updatedAt:serverTimestamp()});await loadAdminGuarantees();}catch(err){alert("تعذر تعديل العنوان: "+err.message);}return;}if(change){const picker=change.parentElement.querySelector(`[data-guarantee-file="${change.dataset.changeGuaranteeImage}"]`);picker?.click();return;}if(del&&confirm("هل تريد حذف ضمان التعامل؟")){try{await deleteDoc(doc(db,"dealGuarantees",del.dataset.deleteGuarantee));await loadAdminGuarantees();}catch(err){alert("تعذر الحذف: "+err.message);}}});
 $("adminGuarantees").addEventListener("change",async e=>{const picker=e.target.closest("[data-guarantee-file]");if(!picker||!isAdmin||!picker.files?.[0])return;try{const file=picker.files[0];if(!file.type.startsWith("image/"))throw new Error("اختر صورة فقط.");const image=await compressImage(file,560000,1100,.65);await updateDoc(doc(db,"dealGuarantees",picker.dataset.guaranteeFile),{image,updatedAt:serverTimestamp()});await loadAdminGuarantees();}catch(err){alert("تعذر تغيير الصورة: "+err.message);}finally{picker.value="";}});
 
-$("addSellOrderCategory").onclick=async()=>{
-  if(!isAdmin)return;
-  const name=$("sellOrderCategoryName").value.trim(),parentId=$("sellOrderParent").value||"";
-  if(!name){$("sellOrderAdminMessage").textContent="اكتب اسم القائمة أولاً.";return;}
-  if(sellOrderCategoriesCache.some(x=>(x.parentId||"")===parentId&&String(x.name||"").trim().toLocaleLowerCase("ar")===name.toLocaleLowerCase("ar"))){$("sellOrderAdminMessage").textContent="هذه القائمة موجودة بالفعل داخل نفس القائمة.";return;}
-  try{await addDoc(collection(db,"sellOrderCategories"),{name,parentId,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});$("sellOrderCategoryName").value="";$("sellOrderAdminMessage").textContent="تمت إضافة القائمة.";await refreshSellOrderAdmin();}
-  catch(e){$("sellOrderAdminMessage").textContent="تعذر إضافة القائمة: "+e.message;}
-};
-$("sellOrderAdminTree").addEventListener("click",async e=>{
-  if(!isAdmin)return;
-  const edit=e.target.closest("[data-edit-sell-category]");
-  if(edit){const item=sellOrderCategoriesCache.find(x=>x.id===edit.dataset.editSellCategory);if(!item)return;const name=prompt("اكتب الاسم الجديد للقائمة:",item.name||"");if(name===null)return;if(!name.trim())return alert("اسم القائمة مطلوب.");try{await updateDoc(doc(db,"sellOrderCategories",item.id),{name:name.trim(),updatedAt:serverTimestamp()});await refreshSellOrderAdmin();}catch(err){alert("تعذر تعديل القائمة: "+err.message);}return;}
-  const del=e.target.closest("[data-delete-sell-category]");
-  if(del){const id=del.dataset.deleteSellCategory;if(!confirm("حذف هذه القائمة وكل القوائم الموجودة بداخلها؟"))return;try{const ids=new Set([id]);let changed=true;while(changed){changed=false;for(const x of sellOrderCategoriesCache){if(x.parentId&&ids.has(x.parentId)&&!ids.has(x.id)){ids.add(x.id);changed=true;}}}for(const childId of ids)await deleteDoc(doc(db,"sellOrderCategories",childId));await refreshSellOrderAdmin();}catch(err){alert("تعذر حذف القائمة: "+err.message);}}
-});
-$("adminSellOrders").addEventListener("click",async e=>{const b=e.target.closest("[data-delete-sell-order]");if(!b||!isAdmin||!confirm("هل تريد حذف طلب البيع؟"))return;try{await deleteDoc(doc(db,"sellOrders",b.dataset.deleteSellOrder));await loadAdminSellOrders();}catch(err){alert("تعذر حذف الطلب: "+err.message);}});
-$("refreshSellOrders").onclick=loadAdminSellOrders;
-$("sellOrderOpen").onclick=openSellOrderPage;
-$("sellOrderBack").onclick=()=>showPage(sellOrderReturnPage);
-$("sellOrderCategoryList").addEventListener("click",e=>{const b=e.target.closest("[data-order-category]");if(b){sellOrderCategoryPath.push(b.dataset.orderCategory);$("sellOrderGameName").value="";renderSellOrderUser();}});
-$("sellOrderBreadcrumb").addEventListener("click",e=>{const root=e.target.closest("[data-order-root]");if(root){sellOrderCategoryPath=[];$("sellOrderGameName").value="";renderSellOrderUser();return;}const crumb=e.target.closest("[data-order-crumb]");if(crumb){sellOrderCategoryPath=sellOrderCategoryPath.slice(0,Number(crumb.dataset.orderCrumb)+1);$("sellOrderGameName").value="";renderSellOrderUser();}});
-$("sellOrderForm").addEventListener("submit",submitSellOrder);
 async function compressImage(file,maxBytes=700000,maxDimension=900,quality=0.62){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const scale=Math.min(1,maxDimension/Math.max(img.width,img.height));const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);let q=quality,data=canvas.toDataURL("image/jpeg",q);while(data.length>maxBytes&&q>0.28){q-=0.07;data=canvas.toDataURL("image/jpeg",q);}if(data.length>maxBytes)reject(new Error("حجم الصورة كبير. اختر صورة أصغر."));else resolve(data);};img.src=reader.result;};reader.readAsDataURL(file);});}
 function resetAdminSequence(){onlineClicks=0;gamesClicks=0;adminSequenceReady=false;}
 function openAdminRoute(){showPage("admin");showAdminTools();}
@@ -766,56 +642,29 @@ async function startDeveloperChat(){
     updatedAt:serverTimestamp()
   },{merge:true});
   showPage("chatPage");
-  $("sellOrderOpen").hidden=isAdmin;
   $("chatHeading").textContent="الدردشة مع المطور";
   $("chatHeading").dataset.chatName="الدردشة مع المطور";
   await watchChat(currentUser.uid,false);
 }
 function renderMessages(box,snap){
-  if(!box)return;
-  const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<150;
-  if(snap.empty){box.innerHTML='<p class="muted chat-empty" style="text-align:center;margin-top:30px">ابدأ المحادثة برسالة للمطور.</p>';return;}
-  box.querySelector(".chat-empty")?.remove();
-  const liveIds=new Set();
-  const orderedDocs=[...snap.docs].sort((a,b)=>(a.data().createdAt?.toMillis?.()||0)-(b.data().createdAt?.toMillis?.()||0));
-  for(const d of orderedDocs){
-    liveIds.add(d.id);
+  const me=currentUser?.uid;
+  box.innerHTML=snap.empty?'<p class="muted" style="text-align:center;margin-top:30px">ابدأ المحادثة برسالة للمطور.</p>':snap.docs.map(d=>{
     const m=d.data();
-    const own=isAdminUid(m.senderId)?isAdminUid(currentUser?.uid):m.senderId===currentUser?.uid;
+    const own=isAdminUid(m.senderId)?isAdminUid(me):m.senderId===me;
     const side=own?'own':'other';
-    const time=m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'';
-    const html=`<div class="chat-bubble ${side}" data-message-id="${escapeHtml(d.id)}">${m.text?`<div style="white-space:pre-wrap">${escapeHtml(m.text)}</div>`:''}${m.image?`<img src="${escapeHtml(m.image)}" alt="صورة مرسلة في الدردشة" loading="lazy">`:''}<small class="chat-time">${time}</small></div>`;
-    let row=box.querySelector(`[data-message-id="${CSS.escape(d.id)}"]`);
-    if(row){if(row.outerHTML!==html)row.outerHTML=html;}
-    else{const wrap=document.createElement("div");wrap.className=`chat-bubble-row ${side}`;wrap.innerHTML=html;box.appendChild(wrap);}
-  }
-  box.querySelectorAll("[data-message-id]").forEach(node=>{if(!liveIds.has(node.dataset.messageId))node.closest(".chat-bubble-row")?.remove();});
-  if(nearBottom)box.scrollTop=box.scrollHeight;
+    return `<div class="chat-bubble-row ${side}"><div class="chat-bubble ${side}">${m.text?`<div style="white-space:pre-wrap">${escapeHtml(m.text)}</div>`:''}${m.image?`<img src="${m.image}" alt="صورة مرسلة في الدردشة">`:''}<small class="chat-time">${m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):''}</small></div></div>`;
+  }).join("");
+  box.scrollTop=box.scrollHeight;
 }
-async function watchChat(uid,adminView){
-  if(activeChatUnsub)activeChatUnsub();
-  $("chatMessages").innerHTML='<p class="muted" style="text-align:center;margin-top:30px">جارٍ تحميل المحادثة...</p>';
-  await markChatRead(uid,adminView);
-  const ref=collection(db,"chats",uid,"messages");
-  let firstSnapshot=true;
-  activeChatUnsub=onSnapshot(ref,{includeMetadataChanges:true},snap=>{
-    if((isAdmin?window.adminChatTarget:currentUser?.uid)!==uid)return;
-    renderMessages($("chatMessages"),snap);
-    const hasNewIncoming=snap.docChanges().some(change=>change.type==="added"&&!isAdminUid(change.doc.data().senderId)===adminView);
-    if(firstSnapshot||hasNewIncoming)markChatRead(uid,adminView);
-    firstSnapshot=false;
-  },e=>{$("chatError").textContent="تعذر تحميل الرسائل: "+e.message;});
-}
-let chatSending=false;
+async function markChatRead(uid,adminView){try{await updateDoc(doc(db,"chats",uid),adminView?{unreadForAdmin:0}:{unreadForUser:0});}catch(e){console.warn("تعذر تحديث حالة قراءة المحادثة",e);}}
+async function watchChat(uid,adminView){if(activeChatUnsub)activeChatUnsub();await markChatRead(uid,adminView);const ref=collection(db,"chats",uid,"messages");activeChatUnsub=onSnapshot(query(ref,orderBy("createdAt","asc")),async snap=>{renderMessages($("chatMessages"),snap);await markChatRead(uid,adminView);},e=>{$("chatError").textContent="تعذر تحميل الرسائل: "+e.message;});}
 async function sendChatMessage(){
   if(!currentUser)return showPage("loginPage");
-  if(chatSending)return;
   const input=$("chatInput"),text=input.value.trim(),file=$("chatImageInput").files?.[0];
   if(!text&&!file)return;
   const adminSender=isAdminUid(currentUser.uid);
   const uid=adminSender?window.adminChatTarget:currentUser.uid;
   if(!uid)return;
-  chatSending=true;$("chatSend").disabled=true;
   try{
     let image="";
     if(file){
@@ -824,33 +673,33 @@ async function sendChatMessage(){
       if(image.length>520000)throw new Error("الصورة كبيرة، اختر صورة أصغر");
     }
     const chatRef=doc(db,"chats",uid);
+    await setDoc(chatRef,{
+      userId:uid,
+      userName:adminSender?(window.adminChatUserName||"مستخدم"):(userProfile?.name||currentUser.displayName||"مستخدم"),
+      photo:adminSender?"":(userProfile?.photo||currentUser.photoURL||""),
+      updatedAt:serverTimestamp()
+    },{merge:true});
     const messageText=text||(image?"📷 صورة":"");
-    const messageRef=doc(collection(db,"chats",uid,"messages"));
-    const messageWrite=setDoc(messageRef,{
+    await addDoc(collection(db,"chats",uid,"messages"),{
       senderId:currentUser.uid,
       senderName:adminSender?"المطور":(userProfile?.name||currentUser.displayName||"مستخدم"),
       text:messageText,
       ...(image?{image}:{}),
       createdAt:serverTimestamp()
     });
-    input.value="";
-    $("chatImageInput").value="";
-    $("chatError").textContent="";
-    const metaWrite=setDoc(chatRef,{
-      userId:uid,
-      userName:adminSender?(window.adminChatUserName||"مستخدم"):(userProfile?.name||currentUser.displayName||"مستخدم"),
-      photo:adminSender?"":(userProfile?.photo||currentUser.photoURL||""),
+    await updateDoc(chatRef,{
       lastMessage:messageText,
       lastSenderId:currentUser.uid,
       lastMessageAt:serverTimestamp(),
       updatedAt:serverTimestamp(),
       ...(adminSender?{unreadForUser:increment(1),unreadForAdmin:0}:{unreadForAdmin:increment(1),unreadForUser:0})
-    },{merge:true});
-    await Promise.all([messageWrite,metaWrite]);
+    });
+    input.value="";
+    $("chatImageInput").value="";
+    $("chatError").textContent="";
   }catch(e){
     $("chatError").textContent="تعذر إرسال الرسالة: "+e.message;
-    if(!input.value)input.value=text;
-  }finally{chatSending=false;$("chatSend").disabled=false;}
+  }
 }
 function renderAdminChatRows(){const box=$("adminChatList"),term=($("adminChatSearch")?.value||"").trim().toLocaleLowerCase("ar");const rows=adminChatRowsCache.filter(x=>[x.name,x.preview,x.uid].some(v=>String(v||"").toLocaleLowerCase("ar").includes(term)));box.innerHTML=rows.length?rows.map(x=>`<div class="admin-chat-row"><button class="admin-chat-item ${x.unread>0?'unread':''}" data-open-chat="${escapeHtml(x.uid)}"><img class="avatar" src="${escapeHtml(x.photo||defaultAvatar)}" alt=""><span class="admin-chat-main"><strong class="admin-chat-name">${escapeHtml(x.name)}</strong><small class="admin-chat-preview">${escapeHtml(x.preview)}</small></span><span class="admin-chat-meta"><small class="admin-chat-time">${escapeHtml(x.time)}</small><b class="admin-unread-badge" ${x.unread>0?'':'hidden'}>${x.unread>99?'99+':x.unread}</b></span></button><div class="admin-chat-menu"><button type="button" class="admin-chat-more" data-chat-menu="${escapeHtml(x.uid)}" aria-label="خيارات المحادثة">⋮</button><div class="admin-chat-menu-panel" data-chat-menu-panel="${escapeHtml(x.uid)}" hidden><button type="button" data-delete-chat="${escapeHtml(x.uid)}">🗑️ حذف المحادثة</button></div></div></div>`).join(""):'<p class="muted">لا توجد محادثات مطابقة للبحث.</p>';}
 async function loadAdminChats(){if(!isAdmin)return;const box=$("adminChatList");box.innerHTML='<p class="muted">جارٍ تحميل المحادثات...</p>';try{const snap=await getDocs(collection(db,"chats"));const docs=snap.docs.sort((a,b)=>(b.data().updatedAt?.toMillis?.()||0)-(a.data().updatedAt?.toMillis?.()||0));adminChatRowsCache=await Promise.all(docs.map(async d=>{let x=d.data();if(!x.photo||!x.userName){try{const ps=await getDoc(doc(db,"profiles",d.id));if(ps.exists())x={...x,...ps.data()};}catch(_){}}let preview=x.lastMessage||"لا توجد رسائل بعد";let lastTime=x.lastMessageAt?.toDate?.()||x.updatedAt?.toDate?.()||null;if(!x.lastMessage){try{const last=await getDocs(query(collection(db,"chats",d.id,"messages"),orderBy("createdAt","desc"),limit(1)));if(!last.empty){const m=last.docs[0].data();preview=m.text||(m.image?"📷 صورة":"رسالة");lastTime=m.createdAt?.toDate?.()||lastTime;}}catch(_){}}const unread=Number(x.unreadForAdmin||0);const time=lastTime?lastTime.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'';const original=x.name||x.userName||x.name||'مستخدم';return {uid:d.id,name:adminChatDisplayName(d.id,original),photo:x.photo||defaultAvatar,preview,unread,time,originalName:original};}));renderAdminChatRows();}catch(e){box.textContent="تعذر تحميل الرسائل: "+e.message;}}
@@ -874,7 +723,7 @@ $("gamePickerList").addEventListener("click",e=>{const b=e.target.closest("[data
 $("chatHubBack").onclick=()=>showPage("home");$("gamePickerBack").onclick=()=>showPage("home");$("openDeveloperChatFromHub").onclick=()=>startDeveloperChat();
 $("adminNavHome").onclick=()=>showPage("home");$("adminNavMessages").onclick=()=>{if(!isAdmin)return;showPage("adminMessagesPage");loadAdminChats();};$("adminNavPurchases").onclick=()=>{if(!isAdmin)return;showPage("adminPurchasesPage");loadAdminPurchases();};$("adminNavCharge").onclick=()=>showPage("charge");$("adminNavDashboard").onclick=()=>{if(!isAdmin)return;showPage("admin");showAdminTools();};
 $("chatSend").onclick=sendChatMessage;$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChatMessage();});$("chatBack").onclick=()=>{if(activeChatUnsub){activeChatUnsub();activeChatUnsub=null;}if(isAdmin){showPage("adminMessagesPage");loadAdminChats();}else showPage("home");};
-$("chatMessages").addEventListener("click",()=>{});$("adminChatList").addEventListener("click",async e=>{const menu=e.target.closest("[data-chat-menu]");if(menu){const uid=menu.dataset.chatMenu;const panel=$("adminChatList").querySelector(`[data-chat-menu-panel="${uid}"]`);if(panel){const opening=panel.hidden;$("adminChatList").querySelectorAll("[data-chat-menu-panel]").forEach(p=>p.hidden=true);panel.hidden=!opening;}return;}const del=e.target.closest("[data-delete-chat]");if(del){await deleteAdminChat(del.dataset.deleteChat);return;}const b=e.target.closest("[data-open-chat]");if(!b||!isAdmin)return;window.adminChatTarget=b.dataset.openChat;window.chatProfileUid=window.adminChatTarget;const chatDoc=await getDoc(doc(db,"chats",window.adminChatTarget));let meta=chatDoc.exists()?chatDoc.data():{};try{const ps=await getDoc(doc(db,"profiles",window.adminChatTarget));if(ps.exists())meta={...meta,...ps.data()};}catch(_){}window.adminChatOriginalName=meta.name||meta.userName||"مستخدم";window.adminChatUserName=adminChatDisplayName(window.adminChatTarget,window.adminChatOriginalName);showPage("chatPage");$("sellOrderOpen").hidden=true;$("chatHeading").textContent=window.adminChatUserName;$("chatPage").querySelector(".chat-heading-avatar").innerHTML=`<img src="${escapeHtml(meta.photo||defaultAvatar)}" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover">`;$("chatInput").value="";$("chatError").textContent="";await watchChat(window.adminChatTarget,true);});
+$("chatMessages").addEventListener("click",()=>{});$("adminChatList").addEventListener("click",async e=>{const menu=e.target.closest("[data-chat-menu]");if(menu){const uid=menu.dataset.chatMenu;const panel=$("adminChatList").querySelector(`[data-chat-menu-panel="${uid}"]`);if(panel){const opening=panel.hidden;$("adminChatList").querySelectorAll("[data-chat-menu-panel]").forEach(p=>p.hidden=true);panel.hidden=!opening;}return;}const del=e.target.closest("[data-delete-chat]");if(del){await deleteAdminChat(del.dataset.deleteChat);return;}const b=e.target.closest("[data-open-chat]");if(!b||!isAdmin)return;window.adminChatTarget=b.dataset.openChat;window.chatProfileUid=window.adminChatTarget;const chatDoc=await getDoc(doc(db,"chats",window.adminChatTarget));let meta=chatDoc.exists()?chatDoc.data():{};try{const ps=await getDoc(doc(db,"profiles",window.adminChatTarget));if(ps.exists())meta={...meta,...ps.data()};}catch(_){}window.adminChatOriginalName=meta.name||meta.userName||"مستخدم";window.adminChatUserName=adminChatDisplayName(window.adminChatTarget,window.adminChatOriginalName);showPage("chatPage");$("chatHeading").textContent=window.adminChatUserName;$("chatPage").querySelector(".chat-heading-avatar").innerHTML=`<img src="${escapeHtml(meta.photo||defaultAvatar)}" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover">`;$("chatInput").value="";$("chatError").textContent="";await watchChat(window.adminChatTarget,true);});
 $("adminChatSearch").addEventListener("input",renderAdminChatRows);
 $("chatOpenProfile").addEventListener("click",()=>{const uid=isAdmin?(window.adminChatTarget||window.chatProfileUid):window.chatProfileUid;if(uid)openPublicProfile(uid,"chatPage");});
 $("publicProfileContent").addEventListener("click",e=>{const more=e.target.closest("#adminProfileMore");if(!more||!isAdmin)return;const uid=window.adminViewedProfileUid;const current=adminChatDisplayName(uid,window.adminChatOriginalName||"مستخدم");const next=prompt("اكتب الاسم الذي سيظهر لك أنت فقط في قائمة الدردشات:",current);if(next===null)return;const clean=next.trim();if(clean.length<2||clean.length>30){alert("الاسم يجب أن يكون من حرفين إلى 30 حرفًا.");return;}setAdminChatAlias(uid,clean);window.adminChatUserName=clean;$("chatHeading").textContent=clean;openPublicProfile(uid,"chatPage");loadAdminChats();});
