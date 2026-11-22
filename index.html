@@ -77,7 +77,7 @@ body:has(#chatPage.chat-screen.active){overflow:hidden}
 .chat-heading-wrap{display:flex;align-items:center;gap:10px;min-width:0;flex:1}.chat-heading-wrap #chatHeading{display:block;font-size:16px;font-weight:700;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chat-heading-avatar{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:var(--panel2);font-size:20px}.chat-top-spacer{width:4px}
 .chat-messages{direction:rtl;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 12px 20px;background-color:var(--bg);background-image:radial-gradient(rgba(130,150,175,.10) .8px,transparent .8px);background-size:18px 18px;scroll-behavior:smooth}
 .chat-bubble-row{direction:ltr;display:flex;width:100%;margin:7px 0}.chat-bubble-row.own{justify-content:flex-end}.chat-bubble-row.other{justify-content:flex-start}.chat-bubble{direction:rtl;max-width:min(82%,520px);padding:9px 12px 7px;border:1px solid var(--line);border-radius:15px 15px 5px 15px;background:#145c4b;color:#fff;overflow-wrap:anywhere;box-shadow:0 1px 2px #0002}.chat-bubble.other{background:var(--panel);color:var(--text);border-radius:15px 15px 15px 5px}.chat-bubble img{display:block;max-width:min(260px,100%);max-height:300px;border-radius:10px;margin-top:7px}.chat-bubble .chat-time{display:block;margin-top:5px;text-align:left;color:rgba(255,255,255,.66);font-size:10px}.chat-bubble.other .chat-time{color:var(--muted)}
-.chat-bottom{flex:0 0 auto;padding:7px 10px calc(8px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}.chat-error{min-height:0;margin:0;color:var(--danger);font-size:12px}.chat-error:empty{display:none}.chat-composer{display:flex;align-items:center;gap:8px;max-width:900px;margin:auto}.chat-camera-plus{position:relative;width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:50%;background:var(--panel2);border:1px solid var(--line);color:var(--text);cursor:pointer}.chat-camera-plus svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.chat-camera-plus .plus-mark{position:absolute;top:-5px;right:-4px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;font-size:14px;font-weight:900;line-height:1;border:2px solid var(--panel)}.chat-text-input{min-width:0;flex:1;height:44px;padding:0 16px;border-radius:24px;border:1px solid var(--line);background:var(--panel2);color:var(--text);outline:none}.chat-send{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;background:#168c67;color:#fff}.chat-send svg{width:22px;height:22px;fill:currentColor}
+.chat-bottom{flex:0 0 auto;padding:7px 10px calc(8px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}.chat-error{min-height:0;margin:0;color:var(--danger);font-size:12px}.chat-error:empty{display:none}.chat-error:not(:empty){display:block;min-height:22px;padding:4px 2px;line-height:1.5}.chat-composer{display:flex;align-items:center;gap:8px;max-width:900px;margin:auto}.chat-camera-plus{position:relative;width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:50%;background:var(--panel2);border:1px solid var(--line);color:var(--text);cursor:pointer}.chat-camera-plus svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.chat-camera-plus .plus-mark{position:absolute;top:-5px;right:-4px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;font-size:14px;font-weight:900;line-height:1;border:2px solid var(--panel)}.chat-text-input{min-width:0;flex:1;height:44px;padding:0 16px;border-radius:24px;border:1px solid var(--line);background:var(--panel2);color:var(--text);outline:none}.chat-send{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;background:#168c67;color:#fff}.chat-send svg{width:22px;height:22px;fill:currentColor}
 
 .admin-chat-search{width:100%;margin:10px 0 14px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);outline:none}
 .admin-chat-row{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line)}.admin-chat-row .admin-chat-item{flex:1;min-width:0;border:0}.admin-chat-more{width:38px;height:38px;flex:0 0 38px;border-radius:50%;background:var(--panel2);color:var(--text);font-size:23px;line-height:1}.admin-chat-menu{position:relative;flex:0 0 auto}.admin-chat-menu-panel{position:absolute;z-index:12;left:0;top:42px;min-width:125px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px #0006}.admin-chat-menu-panel button{display:block;width:100%;padding:10px;text-align:right;background:transparent;color:var(--text);border-radius:7px}.admin-chat-menu-panel button:hover{background:var(--panel2)}
@@ -733,13 +733,17 @@ async function sendChatMessage(audioData=""){
       ...(audioData?{audio:audioData}:{}),
       createdAt:serverTimestamp()
     });
-    await updateDoc(chatRef,{
-      lastMessage:messageText,
-      lastSenderId:currentUser.uid,
-      lastMessageAt:serverTimestamp(),
-      updatedAt:serverTimestamp(),
-      ...(adminSender?{unreadForUser:increment(1),unreadForAdmin:0}:{unreadForAdmin:increment(1),unreadForUser:0})
-    });
+    // إضافة الرسالة هي عملية الإرسال الأساسية؛ تحديث ملخص المحادثة عملية منفصلة.
+    // لا نعتبر الإرسال فاشلًا إذا نجحت الرسالة وتعذر تحديث عداد/ملخص المحادثة.
+    try{
+      await updateDoc(chatRef,{
+        lastMessage:messageText,
+        lastSenderId:currentUser.uid,
+        lastMessageAt:serverTimestamp(),
+        updatedAt:serverTimestamp(),
+        ...(adminSender?{unreadForUser:increment(1),unreadForAdmin:0}:{unreadForAdmin:increment(1),unreadForUser:0})
+      });
+    }catch(metaError){console.warn("تم إرسال الرسالة لكن تعذر تحديث ملخص المحادثة",metaError);}
     input.value="";
     $("chatImageInput").value="";
     $("chatError").textContent="";
@@ -826,9 +830,9 @@ async function toggleVoiceRecording(){
     const mimeChoices=["audio/mp4","audio/webm;codecs=opus","audio/webm"];
     let recorder=null,lastError=null;
     for(const mime of mimeChoices){
-      try{if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(mime)){recorder=new MediaRecorder(stream,{mimeType:mime,audioBitsPerSecond:24000});break;}}catch(e){lastError=e;}
+      try{if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(mime)){recorder=new MediaRecorder(stream,{mimeType:mime,audioBitsPerSecond:12000});break;}}catch(e){lastError=e;}
     }
-    if(!recorder){try{recorder=new MediaRecorder(stream,{audioBitsPerSecond:24000});}catch(e){lastError=e;recorder=new MediaRecorder(stream);}}
+    if(!recorder){try{recorder=new MediaRecorder(stream,{audioBitsPerSecond:12000});}catch(e){lastError=e;recorder=new MediaRecorder(stream);}}
     chatMediaRecorder=recorder;
     recorder.ondataavailable=e=>{if(e.data&&e.data.size)chatAudioChunks.push(e.data);};
     recorder.onerror=e=>{error.textContent="حصل خطأ من مسجل الصوت: "+(e.error?.message||e.message||"تعذر التسجيل");if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;clearChatAudioDraft();};
@@ -841,9 +845,9 @@ async function toggleVoiceRecording(){
       const mimeType=recorder.mimeType||chatAudioChunks[0]?.type||"audio/mp4";
       const blob=new Blob(chatAudioChunks,{type:mimeType});
       if(!blob.size){error.textContent="لم يصل صوت من المايكروفون. تأكد من إذن المايكروفون ومن عدم استخدام تطبيق آخر له.";clearChatAudioDraft();return;}
-      if(blob.size>480000){error.textContent="حجم التسجيل كبير للإرسال. جرّب تسجيلًا أقصر أو أعد التسجيل بجوار الميكروفون.";clearChatAudioDraft();return;}
+      if(blob.size>300000){error.textContent="حجم التسجيل كبير للإرسال. جرّب تسجيلًا أقصر أو أعد التسجيل بجوار الميكروفون.";clearChatAudioDraft();return;}
       const reader=new FileReader();
-      reader.onload=()=>{const data=String(reader.result||"");if(data.length>950000){error.textContent="حجم التسجيل أكبر من المساحة المسموحة للرسالة.";clearChatAudioDraft();return;}chatPendingAudio=data;const preview=$("chatAudioPreview");preview.src=data;preview.hidden=false;$("chatAudioCancel").textContent="إلغاء";$("chatRecordStatus").textContent="معاينة";$("chatAudioDraft").hidden=false;};
+      reader.onload=()=>{const data=String(reader.result||"");if(data.length>420000){error.textContent="حجم التسجيل أكبر من المساحة المسموحة للرسالة.";clearChatAudioDraft();return;}chatPendingAudio=data;const preview=$("chatAudioPreview");preview.src=data;preview.hidden=false;$("chatAudioCancel").textContent="إلغاء";$("chatRecordStatus").textContent="معاينة";$("chatAudioDraft").hidden=false;};
       reader.onerror=()=>{error.textContent="تعذر تجهيز التسجيل الصوتي للإرسال.";clearChatAudioDraft();};
       reader.readAsDataURL(blob);
     };
@@ -873,12 +877,16 @@ $("chatQuickRepliesList").addEventListener("click",async e=>{const send=e.target
 $("chatRequestEntryBtn").onclick=async()=>{if(!currentUser){showPage("loginPage");return;}showPage("requestMenuPage");await loadRequestCategories();};$("chatSend").onclick=async()=>{
   const send=$("chatSend");
   if(send.disabled)return;
-  send.disabled=true;
   const audioData=chatPendingAudio;
+  if(audioData&&!audioData.startsWith("data:audio/")){$("chatError").textContent="ملف التسجيل غير جاهز للإرسال. ألغِ التسجيل وأعده مرة أخرى.";return;}
+  send.disabled=true;
+  const label=send.querySelector(".chat-send-label"),oldLabel=label?.textContent||"إرسال";
+  if(label)label.textContent="جارٍ الإرسال";
   try{
     const sent=await sendChatMessage(audioData||"");
-    if(sent&&audioData)clearChatAudioDraft();
-  }finally{send.disabled=false;}
+    if(sent&&audioData){clearChatAudioDraft();$("chatError").textContent="تم إرسال التسجيل بنجاح.";}
+  }catch(err){$("chatError").textContent="تعذر إرسال التسجيل: "+(err?.message||"تحقق من اتصال الإنترنت وصلاحيات Firebase");}
+  finally{send.disabled=false;if(label)label.textContent=oldLabel;}
 };
 $("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChatMessage();});$("chatBack").onclick=()=>{if(activeChatUnsub){activeChatUnsub();activeChatUnsub=null;}if(isAdmin){showPage("adminMessagesPage");loadAdminChats();}else showPage("home");};
 async function handleRequestOwnerLink(e){const b=e.target.closest("[data-request-source]");if(!b||!isAdmin)return;try{b.disabled=true;const snap=await getDoc(doc(db,"sellRequests",b.dataset.requestSource));if(!snap.exists())throw new Error("بيانات صاحب الطلب غير موجودة");await openAdminRequestOwnerChat(snap.data().userId);}catch(err){alert("تعذر فتح محادثة صاحب الطلب: "+err.message);}finally{b.disabled=false;}}
