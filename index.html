@@ -106,6 +106,22 @@ body:has(#chatPage.chat-screen.active){overflow:hidden}
 
 .request-chat-card{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:12px;margin:8px 0;max-width:100%;color:var(--text)}
 .request-chat-card h4{margin:0 0 8px}.request-chat-card p{margin:5px 0;line-height:1.7;white-space:pre-wrap}.request-chat-images{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}.request-chat-images img{width:78px;height:78px;object-fit:cover;border-radius:9px}.request-chat-actions{display:grid;gap:8px;margin-top:10px}.request-chat-actions select{width:100%;min-width:0}.request-publish-form{display:grid;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.request-admin-name{display:inline-block;color:var(--accent);font-weight:800;text-decoration:underline;cursor:pointer;background:none;border:0;padding:0;font:inherit}
+
+.admin-intro{margin:2px 0 14px;line-height:1.7}
+.admin-accordion-list{display:grid;gap:10px;margin-top:12px}
+.admin-accordion{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+.admin-accordion>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:62px;padding:12px 14px;cursor:pointer;user-select:none;background:var(--panel2);transition:background .18s}
+.admin-accordion>summary::-webkit-details-marker{display:none}
+.admin-accordion>summary::after{content:'＋';margin-inline-start:auto;font-size:20px;font-weight:800;color:var(--gold);transition:transform .18s}
+.admin-accordion[open]>summary::after{content:'−'}
+.admin-accordion>summary:active{filter:brightness(1.08)}
+.admin-accordion-icon{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:11px;background:var(--panel);font-size:19px}
+.admin-accordion-title{font-weight:850;font-size:15px;min-width:0}
+.admin-accordion-hint{font-size:11px;color:var(--muted);margin-inline-start:auto;text-align:left}
+.admin-accordion-content{padding:14px;min-width:0}
+.admin-accordion-content.formgrid{margin-top:0}
+.admin-accordion-content>.admin-section{margin-top:14px}.request-form-card[data-post-editor] label{display:block;margin:12px 0 6px;font-weight:800}.request-form-card[data-post-editor] .field{margin-bottom:4px}.request-form-card[data-post-editor] .request-previews{align-items:center}
+@media(max-width:420px){.admin-accordion>summary{gap:8px;padding:11px}.admin-accordion-hint{display:none}.admin-accordion-title{font-size:14px}.admin-accordion-content{padding:11px}}
 </style></head>
 <body>
 <button class="btn" id="installAppBtn" type="button" hidden>📲 تحميل التطبيق</button>
@@ -169,22 +185,48 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
   <p class="muted">إذا لم يكن الحساب هو حساب المدير، فلن تظهر لوحة التحكم.</p>
 </div>
 <div class="adminbox" id="adminWorkspace" hidden>
-  <h3 id="publishTitle">إضافة منشور جديد</h3>
-  <div class="formgrid">
-    <input id="postTitle" class="field" placeholder="عنوان المنشور">
-    <select id="postCategory" class="field"></select><select id="postSubcategory" class="field"><option value="">بدون قسم فرعي</option></select>
-    <textarea id="postBody" class="field" rows="4" placeholder="اكتب تفاصيل المنشور"></textarea>
-    <label class="muted" for="postPrice">سعر المنشور (اختياري)</label><input id="postPrice" class="field" type="number" min="0" step="0.01" placeholder="أدخل السعر">
-    <label class="muted" for="postImages">صور البوست (حتى 4 صور)</label><input id="postImages" class="field" type="file" accept="image/*" multiple><p class="muted">يمكنك اختيار 4 صور كحد أقصى.</p>
-    <button class="primary" id="publishBtn">نشر المنشور</button>
-    <h3>إدارة المنشورات</h3><div id="adminPosts"></div>
-    <h3>إدارة الأقسام الرئيسية</h3><div id="adminCategories"></div><div class="category-tools"><input id="newCategory" class="field" placeholder="اسم القسم الرئيسي"><button class="primary" id="addCategory">إضافة قسم</button></div>
-    <div class="admin-section"><h3>إدارة الأقسام الفرعية</h3><select id="subParent" class="field"></select><div id="adminSubcategories"></div><div class="category-tools"><input id="newSubcategory" class="field" placeholder="اسم القسم الفرعي"><button class="primary" id="addSubcategory">إضافة قسم فرعي</button></div></div>
-    <div class="admin-section"><h3>إدارة قوائم تقديم الطلب</h3><p class="muted">أضف أسماء القوائم التي ستظهر للمستخدمين داخل تقديم الطلب.</p><div id="requestCategoriesAdmin"></div><div class="category-tools"><input id="newRequestCategory" class="field" maxlength="60" placeholder="اسم القائمة الجديدة"><button class="primary" id="addRequestCategory" type="button">إضافة قائمة</button></div><p id="requestCategoryAdminMessage" class="muted"></p></div>
-    <div class="admin-section"><h3>إدارة التعليقات</h3><button class="primary" id="openAdminComments">عرض جميع التعليقات</button></div>
-    <div class="admin-section"><h3>تقييد التعليقات</h3><button class="primary" id="openAdminBans">إدارة تقييد الأعضاء</button></div>
-    <div class="admin-section"><h3>إدارة ضمان التعامل</h3><input id="guaranteeTitle" class="field" maxlength="100" placeholder="عنوان ضمان التعامل"><label class="muted" for="guaranteeImage">اختر صورة من الموبايل</label><input id="guaranteeImage" class="field" type="file" accept="image/*"><button class="primary" id="addGuarantee">إضافة ضمان التعامل</button><p id="guaranteeAdminMessage" class="muted"></p><div id="adminGuarantees"></div></div><div class="admin-section"><h3>إدارة نبذة التطبيق</h3><textarea id="aboutDescription" class="field" rows="5" placeholder="اكتب وصف التطبيق الذي سيظهر للمستخدمين"></textarea><input id="aboutVideo" class="field" type="url" placeholder="رابط فيديو الشرح (YouTube أو MP4)"><button class="primary" id="saveAbout">حفظ نبذة التطبيق</button><p id="aboutAdminMessage" class="muted"></p></div><div class="admin-section"><h3>🕒 مواعيد العمل</h3><p class="muted">اكتب مواعيد العمل بالطريقة التي تريد ظهورها في بروفايل الأدمن، ويمكنك تقسيمها على أكثر من سطر.</p><textarea id="workingHoursInput" class="field" rows="5" maxlength="1500" placeholder="مثال: السبت - الخميس: 10 صباحًا إلى 10 مساءً
+  <p class="muted admin-intro">اختار القائمة اللي عاوزها، واضغط عليها علشان تفتح الأدوات الخاصة بيها.</p>
+  <div class="admin-accordion-list">
+    <details class="admin-accordion" name="admin-sections" open>
+      <summary><span class="admin-accordion-icon">✍️</span><span class="admin-accordion-title">إضافة منشور جديد</span><span class="admin-accordion-hint">نشر وتعديل المحتوى</span></summary>
+      <div class="admin-accordion-content formgrid">
+        <input id="postTitle" class="field" placeholder="عنوان المنشور">
+        <select id="postCategory" class="field"></select><select id="postSubcategory" class="field"><option value="">بدون قسم فرعي</option></select>
+        <textarea id="postBody" class="field" rows="4" placeholder="اكتب تفاصيل المنشور"></textarea>
+        <label class="muted" for="postPrice">سعر المنشور (اختياري)</label><input id="postPrice" class="field" type="number" min="0" step="0.01" placeholder="أدخل السعر">
+        <label class="muted" for="postImages">صور البوست (حتى 4 صور)</label><input id="postImages" class="field" type="file" accept="image/*" multiple><p class="muted">يمكنك اختيار 4 صور كحد أقصى.</p>
+        <button class="primary" id="publishBtn">نشر المنشور</button>
+      </div>
+    </details>
+    <details class="admin-accordion" name="admin-sections">
+      <summary><span class="admin-accordion-icon">🗂️</span><span class="admin-accordion-title">إدارة المنشورات</span><span class="admin-accordion-hint">عرض وتعديل وحذف</span></summary>
+      <div class="admin-accordion-content">
+        <div id="adminPosts"></div>
+        <div class="admin-section"><h3>إدارة الأقسام الرئيسية</h3><div id="adminCategories"></div><div class="category-tools"><input id="newCategory" class="field" placeholder="اسم القسم الرئيسي"><button class="primary" id="addCategory">إضافة قسم</button></div>
+        <div class="admin-section"><h3>إدارة الأقسام الفرعية</h3><select id="subParent" class="field"></select><div id="adminSubcategories"></div><div class="category-tools"><input id="newSubcategory" class="field" placeholder="اسم القسم الفرعي"><button class="primary" id="addSubcategory">إضافة قسم فرعي</button></div></div></div>
+      </div>
+    </details>
+    <details class="admin-accordion" name="admin-sections">
+      <summary><span class="admin-accordion-icon">📋</span><span class="admin-accordion-title">قوائم تقديم الطلب</span><span class="admin-accordion-hint">إضافة وتعديل القوائم</span></summary>
+      <div class="admin-accordion-content"><p class="muted">أضف أسماء القوائم التي ستظهر للمستخدمين داخل تقديم الطلب.</p><div id="requestCategoriesAdmin"></div><div class="category-tools"><input id="newRequestCategory" class="field" maxlength="60" placeholder="اسم القائمة الجديدة"><button class="primary" id="addRequestCategory" type="button">إضافة قائمة</button></div><p id="requestCategoryAdminMessage" class="muted"></p></div>
+    </details>
+    <details class="admin-accordion" name="admin-sections">
+      <summary><span class="admin-accordion-icon">💬</span><span class="admin-accordion-title">التعليقات</span><span class="admin-accordion-hint">إدارة التعليقات وتقييدها</span></summary>
+      <div class="admin-accordion-content"><div class="category-tools"><button class="primary" id="openAdminComments">إدارة التعليقات</button><button class="smallbtn" id="openAdminBans">تقييد التعليقات</button></div></div>
+    </details>
+    <details class="admin-accordion" name="admin-sections">
+      <summary><span class="admin-accordion-icon">🛡️</span><span class="admin-accordion-title">ضمان التعامل</span><span class="admin-accordion-hint">إضافة وتعديل الصور والعناوين</span></summary>
+      <div class="admin-accordion-content formgrid"><input id="guaranteeTitle" class="field" maxlength="100" placeholder="عنوان ضمان التعامل"><label class="muted" for="guaranteeImage">اختر صورة من الموبايل</label><input id="guaranteeImage" class="field" type="file" accept="image/*"><button class="primary" id="addGuarantee">إضافة ضمان التعامل</button><p id="guaranteeAdminMessage" class="muted"></p><div id="adminGuarantees"></div></div>
+    </details>
+    <details class="admin-accordion" name="admin-sections">
+      <summary><span class="admin-accordion-icon">ℹ️</span><span class="admin-accordion-title">نبذة التطبيق</span><span class="admin-accordion-hint">الوصف وفيديو الشرح</span></summary>
+      <div class="admin-accordion-content formgrid"><textarea id="aboutDescription" class="field" rows="5" placeholder="اكتب وصف التطبيق الذي سيظهر للمستخدمين"></textarea><input id="aboutVideo" class="field" type="url" placeholder="رابط فيديو الشرح (YouTube أو MP4)"><button class="primary" id="saveAbout">حفظ نبذة التطبيق</button><p id="aboutAdminMessage" class="muted"></p></div>
+    </details>
+    <details class="admin-accordion" name="admin-sections">
+      <summary><span class="admin-accordion-icon">🕒</span><span class="admin-accordion-title">مواعيد العمل</span><span class="admin-accordion-hint">تحديد مواعيد ظهور الأدمن</span></summary>
+      <div class="admin-accordion-content formgrid"><p class="muted">اكتب مواعيد العمل بالطريقة التي تريد ظهورها في بروفايل الأدمن، ويمكنك تقسيمها على أكثر من سطر.</p><textarea id="workingHoursInput" class="field" rows="5" maxlength="1500" placeholder="مثال: السبت - الخميس: 10 صباحًا إلى 10 مساءً
 الجمعة: إجازة"></textarea><button class="primary" id="saveWorkingHours" type="button">حفظ مواعيد العمل</button><p id="workingHoursAdminMessage" class="muted" aria-live="polite"></p></div>
+    </details>
   </div>
 </div>
 </section>
@@ -597,7 +639,7 @@ $("profilePhoto").onchange=e=>startCrop(e.target.files?.[0],"avatar");$("profile
 function renderAdminSubcategories(){const parent=$("subParent")?.value||categories.find(x=>x!=="الكل");if(!parent)return;const box=$("adminSubcategories");if(!box)return;box.innerHTML=subcategories.map(x=>`<div class="admin-post"><span>${escapeHtml(x.name)}</span><button class="smallbtn" data-edit-sub="${escapeHtml(x.id)}">تعديل</button><button class="danger" data-del-sub="${escapeHtml(x.id)}">حذف</button></div>`).join("")||'<p class="muted">لا توجد أقسام فرعية.</p>';}
 
 function showAdminTools(){if(isAdmin){$("adminLogin").hidden=true;$("adminWorkspace").hidden=false;renderAdminTools();renderRequestCategoriesAdmin();loadAboutInfo();loadWorkingHoursAdmin();loadAdminGuarantees();const parent=$("subParent")?.value;if(parent)watchSubcategories(parent);}else{$("adminWorkspace").hidden=true;$("adminLogin").hidden=false;}}
-function renderAdminTools(){$("adminPosts").innerHTML=posts.map(p=>`<div class="admin-post"><span>${escapeHtml(p.title)}${Number(p.price)>0?" · "+escapeHtml(p.price):""}</span><button class="smallbtn" data-edit-post="${escapeHtml(p.id)}">تعديل</button><button class="danger" data-delete-post="${escapeHtml(p.id)}">حذف</button></div>`).join("")||'<p class="muted">لا توجد منشورات</p>';$("adminCategories").innerHTML=categoryDocs.map(c=>`<div class="admin-post"><span>${escapeHtml(c.name)}</span><button class="smallbtn" data-edit-category="${escapeHtml(c.id)}">تعديل</button><button class="danger" data-delete-category="${escapeHtml(c.id)}" data-category-name="${escapeHtml(c.name)}">حذف</button></div>`).join("")||'<p class="muted">لا توجد أقسام رئيسية. أضف القسم الذي تريده. </p>';const sel=$("subParent");if(sel){const old=sel.value;sel.innerHTML=categoryDocs.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join("");if(categories.includes(old))sel.value=old;renderAdminSubcategories();}}
+function renderAdminTools(){$("adminPosts").innerHTML=posts.map(p=>`<div class="admin-post"><span>${escapeHtml(p.title)}${Number(p.price)>0?" · "+escapeHtml(p.price):""}</span><button class="smallbtn" data-edit-post="${escapeHtml(p.id)}">تعديل كل التفاصيل</button><button class="danger" data-delete-post="${escapeHtml(p.id)}">حذف</button></div>`).join("")||'<p class="muted">لا توجد منشورات</p>';$("adminCategories").innerHTML=categoryDocs.map(c=>`<div class="admin-post"><span>${escapeHtml(c.name)}</span><button class="smallbtn" data-edit-category="${escapeHtml(c.id)}">تعديل</button><button class="danger" data-delete-category="${escapeHtml(c.id)}" data-category-name="${escapeHtml(c.name)}">حذف</button></div>`).join("")||'<p class="muted">لا توجد أقسام رئيسية. أضف القسم الذي تريده. </p>';const sel=$("subParent");if(sel){const old=sel.value;sel.innerHTML=categoryDocs.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join("");if(categories.includes(old))sel.value=old;renderAdminSubcategories();}}
 async function loadAboutInfo(){try{const snap=await getDoc(doc(db,"appInfo","about"));const data=snap.exists()?snap.data():{};$("aboutDescriptionView").textContent=data.description||"لم تتم إضافة نبذة التطبيق بعد.";const url=(data.video||"").trim();const holder=$("aboutVideoView");holder.innerHTML="";if(url){const yt=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);if(yt){holder.innerHTML=`<iframe class="about-video" src="https://www.youtube-nocookie.com/embed/${yt[1]}" title="فيديو شرح التطبيق" allowfullscreen loading="lazy"></iframe>`;}else if(/^https?:\/\/.+\.(mp4|webm|ogg)(?:\?.*)?$/i.test(url)){holder.innerHTML=`<video class="about-video" controls playsinline src="${escapeHtml(url)}"></video>`;}else{holder.innerHTML=`<p class="muted">رابط الفيديو غير صالح. استخدم رابط YouTube أو رابط MP4 مباشر.</p>`;}}if(isAdmin){$("aboutDescription").value=data.description||"";$("aboutVideo").value=data.video||"";}}catch(e){console.error("about",e);$("aboutDescriptionView").textContent="تعذر تحميل نبذة التطبيق.";}}
 $("saveAbout").onclick=async()=>{if(!isAdmin)return;const description=$("aboutDescription").value.trim(),video=$("aboutVideo").value.trim();if(video&&!/^https?:\/\//i.test(video)){alert("أدخل رابط فيديو يبدأ بـ https:// أو http://");return;}try{await setDoc(doc(db,"appInfo","about"),{description,video,updatedAt:serverTimestamp()});$("aboutAdminMessage").textContent="تم حفظ نبذة التطبيق.";await loadAboutInfo();}catch(e){$("aboutAdminMessage").textContent="تعذر الحفظ: "+e.message;}};
 async function loadWorkingHoursAdmin(){if(!isAdmin)return;try{const snap=await getDoc(doc(db,"appInfo","workingHours"));adminWorkingHours=snap.exists()?(snap.data().text||""):"";$("workingHoursInput").value=adminWorkingHours;}catch(e){$("workingHoursAdminMessage").textContent="تعذر تحميل مواعيد العمل: "+e.message;}}
@@ -620,7 +662,33 @@ if($("themeToggle"))$("themeToggle").onclick=()=>setTheme(theme==="dark"?"light"
 $("feed").addEventListener("click",e=>handleFeedClick(e,false));$("categoryFeed").addEventListener("click",e=>handleFeedClick(e,true));
 $("onlineWord").style.cursor="pointer";$("gamesWord").style.cursor="pointer";$("onlineWord").addEventListener("click",()=>{onlineClicks++;if(onlineClicks===5){gamesClicks=0;adminSequenceReady=true;}else if(onlineClicks>5){onlineClicks=1;gamesClicks=0;adminSequenceReady=false;}});$("gamesWord").addEventListener("click",()=>{if(!adminSequenceReady)return;gamesClicks++;if(gamesClicks>2)resetAdminSequence();});
 $("adminHome").onclick=()=>{showPage("home");resetAdminSequence();};
-$("adminPosts").addEventListener("click",async e=>{if(!isAdmin)return;const edit=e.target.closest("[data-edit-post]");if(edit){const post=posts.find(x=>x.id===edit.dataset.editPost);if(!post)return;const title=prompt("تعديل عنوان المنشور",post.title);if(title===null)return;const body=prompt("تعديل تفاصيل المنشور",post.body);if(body===null)return;const priceText=prompt("السعر الجديد (0 بدون سعر)",String(Number(post.price)||0));if(priceText===null)return;const price=Number(priceText);if(!Number.isFinite(price)||price<0){alert("اكتب سعرًا صحيحًا");return;}try{await updateDoc(doc(db,"posts",post.id),{title:title.trim()||post.title,body:body.trim()||post.body,oldPrice:price<(Number(post.price)||0)?Number(post.price):0,price});alert("تم تعديل المنشور");}catch(err){alert("تعذر تعديل المنشور: "+err.message);}return;}const b=e.target.closest("[data-delete-post]");if(b&&confirm("هل تريد حذف هذا المنشور؟")){try{await deleteDoc(doc(db,"posts",b.dataset.deletePost));}catch(err){alert(err.message);}}});
+let adminEditingPostId="";
+function renderPostEditor(post){
+ const imgs=Array.isArray(post.images)&&post.images.length?post.images:(post.image?[post.image]:[]);
+ const catOptions=categoryDocs.map(c=>`<option value="${escapeHtml(c.name)}" ${c.name===(post.cat||"")?"selected":""}>${escapeHtml(c.name)}</option>`).join("");
+ return `<div class="request-form-card" data-post-editor="${escapeHtml(post.id)}"><h3>تعديل كل تفاصيل المنشور</h3>
+ <label>عنوان المنشور</label><input class="field" data-post-title value="${escapeHtml(post.title||"")}">
+ <label>القسم الرئيسي</label><select class="field" data-post-cat><option value="الكل" ${post.cat==="الكل"?"selected":""}>الكل</option>${catOptions}</select>
+ <label>القسم الفرعي</label><input class="field" data-post-subcat value="${escapeHtml(post.subcat||"")}" placeholder="اسم القسم الفرعي أو اتركه فارغًا">
+ <label>المواصفات والتفاصيل</label><textarea class="field" rows="6" data-post-body>${escapeHtml(post.body||"")}</textarea>
+ <label>السعر الحالي</label><input class="field" type="number" min="0" step="0.01" data-post-price value="${Number(post.price)||0}">
+ <label>السعر القديم (اختياري)</label><input class="field" type="number" min="0" step="0.01" data-post-old-price value="${Number(post.oldPrice)||0}">
+ <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" data-post-sold ${post.sold?"checked":""}> تحديد المنشور كـ تم البيع</label>
+ <label>صور المنشور الحالية</label><div class="request-previews">${imgs.map((src,i)=>`<div style="position:relative"><img src="${escapeHtml(src)}" alt="صورة ${i+1}" style="width:84px;height:84px;object-fit:cover"><button type="button" class="danger" data-remove-post-image="${i}" style="padding:3px 8px">حذف</button></div>`).join("")||'<span class="muted">لا توجد صور</span>'}</div>
+ <label>إضافة صور جديدة (حتى 4 صور إجمالًا)</label><input class="field" type="file" accept="image/*" multiple data-post-new-images><p class="muted">يمكنك الاحتفاظ بالصور الحالية أو حذفها وإضافة صور أخرى.</p>
+ <div class="category-tools"><button class="primary" data-save-post="${escapeHtml(post.id)}">حفظ كل التعديلات</button><button class="smallbtn" data-cancel-post-edit>إلغاء</button></div><p class="muted" data-post-edit-message></p></div>`;
+}
+$("adminPosts").addEventListener("click",async e=>{
+ if(!isAdmin)return;
+ const edit=e.target.closest("[data-edit-post]");
+ if(edit){const post=posts.find(x=>x.id===edit.dataset.editPost);if(!post)return;adminEditingPostId=post.id;const existing=$("adminPosts").querySelector(`[data-post-editor]`);if(existing)existing.remove();edit.closest(".admin-post").insertAdjacentHTML("afterend",renderPostEditor(post));return;}
+ const removeImage=e.target.closest("[data-remove-post-image]");
+ if(removeImage){const editor=removeImage.closest("[data-post-editor]"),post=posts.find(x=>x.id===editor?.dataset.postEditor);if(!post)return;let imgs=Array.isArray(post.images)&&post.images.length?[...post.images]:(post.image?[post.image]:[]);const removed=Number(removeImage.dataset.removePostImage);imgs.splice(removed,1);post.images=imgs;post.image=imgs[0]||"";editor.outerHTML=renderPostEditor(post);return;}
+ const cancel=e.target.closest("[data-cancel-post-edit]");if(cancel){cancel.closest("[data-post-editor]")?.remove();adminEditingPostId="";return;}
+ const save=e.target.closest("[data-save-post]");if(save){const editor=save.closest("[data-post-editor]"),id=save.dataset.savePost,post=posts.find(x=>x.id===id);if(!editor||!post)return;const title=editor.querySelector("[data-post-title]").value.trim(),cat=editor.querySelector("[data-post-cat]").value,subcat=editor.querySelector("[data-post-subcat]").value.trim(),body=editor.querySelector("[data-post-body]").value.trim(),priceRaw=editor.querySelector("[data-post-price]").value,oldRaw=editor.querySelector("[data-post-old-price]").value,sold=editor.querySelector("[data-post-sold]").checked,files=Array.from(editor.querySelector("[data-post-new-images]").files||[]);const price=Number(priceRaw),oldPrice=oldRaw===""?0:Number(oldRaw);if(!title||!body){alert("العنوان والتفاصيل مطلوبان.");return;}if(priceRaw===""||!Number.isFinite(price)||price<0||!Number.isFinite(oldPrice)||oldPrice<0){alert("راجع السعر والسعر القديم.");return;}let imgs=Array.isArray(post.images)&&post.images.length?[...post.images]:(post.image?[post.image]:[]);if(imgs.length+files.length>4){alert("الحد الأقصى 4 صور للمنشور. احذف صورة أولاً إذا أردت إضافة صور جديدة.");return;}try{save.disabled=true;for(const file of files){if(!file.type.startsWith("image/"))throw new Error("اختر صورًا فقط.");imgs.push(await compressImage(file,180000,700,.48));}await updateDoc(doc(db,"posts",id),{title,cat,subcat,body,price,oldPrice,sold,images:imgs,image:imgs[0]||"",updatedAt:serverTimestamp()});alert("تم حفظ جميع تعديلات المنشور.");editor.remove();adminEditingPostId="";}catch(err){alert("تعذر حفظ التعديلات: "+err.message);save.disabled=false;}return;}
+ const del=e.target.closest("[data-delete-post]");if(del&&confirm("هل تريد حذف هذا المنشور؟")){try{await deleteDoc(doc(db,"posts",del.dataset.deletePost));}catch(err){alert(err.message);}}
+});
+$("adminPosts").addEventListener("change",e=>{if(e.target.matches("[data-post-new-images]")){const editor=e.target.closest("[data-post-editor]"),post=posts.find(x=>x.id===editor?.dataset.postEditor);const imgs=post?(Array.isArray(post.images)&&post.images.length?post.images:(post.image?[post.image]:[])):[];if(imgs.length+e.target.files.length>4){alert("الحد الأقصى 4 صور للمنشور.");e.target.value="";}}});
 $("adminCategories").addEventListener("click",async e=>{
  const edit=e.target.closest("[data-edit-category]");
  if(edit&&isAdmin){
