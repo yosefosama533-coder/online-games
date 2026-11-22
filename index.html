@@ -808,7 +808,60 @@ function saveQuickReplies(items){localStorage.setItem("og-admin-quick-replies",J
 function renderQuickReplies(){const box=$("chatQuickRepliesList");if(!box)return;const items=getQuickReplies();box.innerHTML=items.length?items.map((v,i)=>`<div class="chat-quick-row"><button type="button" data-send-quick-reply="${i}">${escapeHtml(v)}</button><button type="button" data-delete-quick-reply="${i}" aria-label="حذف الرد">×</button></div>`).join(""):'<p class="muted">لا توجد ردود سريعة بعد. أضف ردًا من الأسفل.</p>'; }
 function clearChatAudioDraft(){if(chatRecordingTicker){clearInterval(chatRecordingTicker);chatRecordingTicker=null;}chatPendingAudio="";const preview=$("chatAudioPreview");if(preview){preview.pause();preview.removeAttribute("src");preview.load();}$("chatAudioDraft").hidden=true;$("chatRecordStatus").textContent="التسجيل جاهز";}
 function stopChatRecording(discard=false){if(!chatMediaRecorder||chatMediaRecorder.state!=="recording")return;chatDiscardRecording=discard;if(chatRecordingTimer){clearTimeout(chatRecordingTimer);chatRecordingTimer=null;}chatMediaRecorder.stop();}
-async function toggleVoiceRecording(){if(!currentUser){showPage("loginPage");return;}const btn=$("chatVoiceRecord");if(chatMediaRecorder&&chatMediaRecorder.state==="recording"){stopChatRecording(false);return;}if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined"){$("chatError").textContent="تسجيل الصوت غير مدعوم في هذا المتصفح.";return;}clearChatAudioDraft();try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chatRecordingStream=stream;chatAudioChunks=[];chatDiscardRecording=false;const preferred=MediaRecorder.isTypeSupported?.("audio/webm;codecs=opus")?"audio/webm;codecs=opus":(MediaRecorder.isTypeSupported?.("audio/mp4")?"audio/mp4":"");chatMediaRecorder=new MediaRecorder(stream,preferred?{mimeType:preferred}:undefined);chatMediaRecorder.ondataavailable=e=>{if(e.data?.size)chatAudioChunks.push(e.data);};chatMediaRecorder.onerror=()=>{$("chatError").textContent="حدث خطأ أثناء تسجيل الصوت.";if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;clearChatAudioDraft();};chatMediaRecorder.onstop=()=>{if(chatRecordingTimer){clearTimeout(chatRecordingTimer);chatRecordingTimer=null;}if(chatRecordingTicker){clearInterval(chatRecordingTicker);chatRecordingTicker=null;}if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;btn.textContent="🎙️";btn.classList.remove("recording");btn.title="تسجيل رسالة صوتية";if(chatDiscardRecording){chatDiscardRecording=false;clearChatAudioDraft();return;}const blob=new Blob(chatAudioChunks,{type:chatMediaRecorder.mimeType||"audio/webm"});if(!blob.size){$("chatError").textContent="لم يتم تسجيل صوت.";return;}if(blob.size>450000){$("chatError").textContent="حجم التسجيل كبير؛ حاول التسجيل بجودة أو مدة أقل.";return;}const reader=new FileReader();reader.onload=()=>{const data=String(reader.result||"");if(data.length>650000){$("chatError").textContent="حجم التسجيل أكبر من المسموح.";return;}chatPendingAudio=data;const preview=$("chatAudioPreview");preview.src=data;preview.hidden=false;$("chatAudioCancel").textContent="إلغاء";$("chatRecordStatus").textContent="معاينة";$("chatAudioDraft").hidden=false;};reader.onerror=()=>$("chatError").textContent="تعذر تجهيز التسجيل الصوتي.";reader.readAsDataURL(blob);};chatMediaRecorder.start();chatRecordingStartedAt=Date.now();if(chatRecordingTicker)clearInterval(chatRecordingTicker);chatRecordingTicker=setInterval(()=>{const sec=Math.min(120,Math.floor((Date.now()-chatRecordingStartedAt)/1000));$("chatRecordStatus").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");},250);btn.textContent="⏹️";btn.classList.add("recording");btn.title="اضغط لإيقاف التسجيل ومراجعته";$("chatRecordStatus").textContent="00:00";$("chatAudioDraft").hidden=false;$("chatAudioPreview").hidden=true;$("chatAudioCancel").textContent="إلغاء التسجيل";chatRecordingTimer=setTimeout(()=>{if(chatMediaRecorder?.state==="recording"){ $("chatRecordStatus").textContent="وصلت للحد الأقصى (دقيقتان)";stopChatRecording(false);}},120000);}catch(e){$("chatError").textContent="تعذر استخدام المايكروفون: "+(e.message||e);if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;$("chatAudioDraft").hidden=true;}}
+async function toggleVoiceRecording(){
+  if(!currentUser){showPage("loginPage");return;}
+  const btn=$("chatVoiceRecord"), error=$("chatError");
+  if(chatMediaRecorder&&chatMediaRecorder.state==="recording"){stopChatRecording(false);return;}
+  error.textContent="";
+  if(!window.isSecureContext){error.textContent="لا يمكن تشغيل المايكروفون إلا عند فتح الموقع عبر اتصال آمن HTTPS.";return;}
+  if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="function"){error.textContent="المتصفح لا يتيح الوصول للمايكروفون. افتح التطبيق في Safari أو Chrome محدّث واسمح باستخدام المايكروفون.";return;}
+  if(typeof window.MediaRecorder==="undefined"){error.textContent="تسجيل الصوت غير مدعوم في هذا المتصفح. جرّب تحديث Safari أو Chrome.";return;}
+  clearChatAudioDraft();
+  btn.disabled=true;
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    chatRecordingStream=stream;chatAudioChunks=[];chatDiscardRecording=false;
+    const mimeChoices=["audio/mp4","audio/webm;codecs=opus","audio/webm"];
+    let recorder=null,lastError=null;
+    for(const mime of mimeChoices){
+      try{if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(mime)){recorder=new MediaRecorder(stream,{mimeType:mime,audioBitsPerSecond:24000});break;}}catch(e){lastError=e;}
+    }
+    if(!recorder){try{recorder=new MediaRecorder(stream,{audioBitsPerSecond:24000});}catch(e){lastError=e;recorder=new MediaRecorder(stream);}}
+    chatMediaRecorder=recorder;
+    recorder.ondataavailable=e=>{if(e.data&&e.data.size)chatAudioChunks.push(e.data);};
+    recorder.onerror=e=>{error.textContent="حصل خطأ من مسجل الصوت: "+(e.error?.message||e.message||"تعذر التسجيل");if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;clearChatAudioDraft();};
+    recorder.onstop=()=>{
+      if(chatRecordingTimer){clearTimeout(chatRecordingTimer);chatRecordingTimer=null;}
+      if(chatRecordingTicker){clearInterval(chatRecordingTicker);chatRecordingTicker=null;}
+      if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;
+      btn.textContent="🎙️";btn.classList.remove("recording");btn.title="تسجيل رسالة صوتية";btn.disabled=false;
+      if(chatDiscardRecording){chatDiscardRecording=false;clearChatAudioDraft();return;}
+      const mimeType=recorder.mimeType||chatAudioChunks[0]?.type||"audio/mp4";
+      const blob=new Blob(chatAudioChunks,{type:mimeType});
+      if(!blob.size){error.textContent="لم يصل صوت من المايكروفون. تأكد من إذن المايكروفون ومن عدم استخدام تطبيق آخر له.";clearChatAudioDraft();return;}
+      if(blob.size>700000){error.textContent="حجم التسجيل كبير للإرسال. قرّب المدة أو سجّل في مكان هادئ وحاول مرة أخرى.";clearChatAudioDraft();return;}
+      const reader=new FileReader();
+      reader.onload=()=>{const data=String(reader.result||"");if(data.length>950000){error.textContent="حجم التسجيل أكبر من المساحة المسموحة للرسالة.";clearChatAudioDraft();return;}chatPendingAudio=data;const preview=$("chatAudioPreview");preview.src=data;preview.hidden=false;$("chatAudioCancel").textContent="إلغاء";$("chatRecordStatus").textContent="معاينة";$("chatAudioDraft").hidden=false;};
+      reader.onerror=()=>{error.textContent="تعذر تجهيز التسجيل الصوتي للإرسال.";clearChatAudioDraft();};
+      reader.readAsDataURL(blob);
+    };
+    recorder.start(250);
+    chatRecordingStartedAt=Date.now();
+    if(chatRecordingTicker)clearInterval(chatRecordingTicker);
+    chatRecordingTicker=setInterval(()=>{const sec=Math.min(120,Math.floor((Date.now()-chatRecordingStartedAt)/1000));$("chatRecordStatus").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");},250);
+    btn.textContent="⏹️";btn.classList.add("recording");btn.title="اضغط لإيقاف التسجيل ومراجعته";
+    $("chatRecordStatus").textContent="00:00";$("chatAudioDraft").hidden=false;$("chatAudioPreview").hidden=true;$("chatAudioCancel").textContent="إلغاء التسجيل";
+    chatRecordingTimer=setTimeout(()=>{if(chatMediaRecorder?.state==="recording"){ $("chatRecordStatus").textContent="02:00";stopChatRecording(false);}},120000);
+  }catch(e){
+    if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;
+    btn.disabled=false;btn.textContent="🎙️";btn.classList.remove("recording");$("chatAudioDraft").hidden=true;
+    const name=e?.name||"";
+    if(name==="NotAllowedError"||name==="PermissionDeniedError")error.textContent="إذن المايكروفون مرفوض. افتح إعدادات الموقع واسمح بالمايكروفون ثم أعد المحاولة.";
+    else if(name==="NotFoundError"||name==="DevicesNotFoundError")error.textContent="لم يتم العثور على ميكروفون متصل بالجهاز.";
+    else if(name==="NotReadableError"||name==="TrackStartError")error.textContent="الميكروفون مستخدم بواسطة تطبيق آخر أو تعذر تشغيله.";
+    else error.textContent="تعذر تشغيل المايكروفون: "+(e.message||name||"خطأ غير معروف");
+  }
+}
 $("chatAudioCancel").onclick=()=>{if(chatMediaRecorder?.state==="recording"){stopChatRecording(true);$("chatAudioDraft").hidden=true;return;}clearChatAudioDraft();$("chatAudioPreview").hidden=false;$("chatAudioCancel").textContent="إلغاء";};
 
 $("chatVoiceRecord").onclick=toggleVoiceRecording;const originalChatSend=sendChatMessage;$("chatSend").onclick=async()=>{if(chatPendingAudio){const data=chatPendingAudio;clearChatAudioDraft();await originalChatSend(data);}else await originalChatSend();};
