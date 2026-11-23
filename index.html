@@ -461,7 +461,7 @@ let categories = ["الكل"], categoryDocs = [];
 let posts = [], category = "الكل", lang = localStorage.getItem("og-lang") || "ar";
 const requestPublishImages = Object.create(null);
 let chatMediaRecorder = null, chatAudioChunks = [], chatPendingAudio = "", chatRecordingStream = null, chatRecordingTimer = null, chatRecordingTicker = null, chatRecordingStartedAt = 0, chatDiscardRecording = false;
-let chatVoiceHoldActive=false,chatVoiceReleasePending=false,chatVoiceAutoSend=false,chatVoiceStarting=false,chatPendingStickerImage="";
+let chatVoiceHoldActive=false,chatVoiceReleasePending=false,chatVoiceAutoSend=false,chatVoiceStarting=false,chatVoiceCancelGesture=false,chatVoiceStartY=0,chatVoiceDiscardPending=false,chatPendingStickerImage="";
 const adminRequestOwnerCache = {};
 let theme = localStorage.getItem("og-theme") || "dark";
 let onlineClicks=0, gamesClicks=0, adminSequenceReady=false;
@@ -1014,6 +1014,7 @@ async function toggleVoiceRecording(){
     if(chatVoiceReleasePending){chatVoiceReleasePending=false;const discard=chatVoiceDiscardPending;chatVoiceDiscardPending=false;chatVoiceAutoSend=!discard;stopChatRecording(discard);}
   }catch(e){
     chatVoiceStarting=false;
+    try{if(chatMediaRecorder&&chatMediaRecorder.state==="recording"){chatDiscardRecording=true;chatMediaRecorder.stop();}}catch(_){}
     if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;
     btn.disabled=false;btn.classList.remove("recording","cancel-ready");$("chatAudioDraft").hidden=true;
     const name=e?.name||"";
@@ -1026,10 +1027,10 @@ async function toggleVoiceRecording(){
 
 
 const voiceBtn=$("chatVoiceRecord");
-voiceBtn.addEventListener("pointerdown",e=>{if(e.button!==undefined&&e.button!==0)return;e.preventDefault();chatVoiceHoldActive=true;chatVoiceReleasePending=false;chatVoiceAutoSend=true;chatVoiceCancelGesture=false;chatVoiceStartY=e.clientY;voiceBtn.setPointerCapture?.(e.pointerId);toggleVoiceRecording();});
-voiceBtn.addEventListener("pointermove",e=>{if(!chatVoiceHoldActive)return;const movedUp=chatVoiceStartY-e.clientY>65;if(movedUp!==chatVoiceCancelGesture){chatVoiceCancelGesture=movedUp;$("chatRecordingPopup").classList.toggle("cancel-ready",movedUp);$("chatRecordingHint").textContent=movedUp?"ارفع إصبعك الآن لإلغاء التسجيل":"جاري التسجيل · اسحب لأعلى للإلغاء";}});
+voiceBtn.addEventListener("pointerdown",e=>{if(e.button!==undefined&&e.button!==0)return;e.preventDefault();if(chatVoiceHoldActive||chatVoiceStarting)return;chatVoiceHoldActive=true;chatVoiceReleasePending=false;chatVoiceAutoSend=true;chatVoiceCancelGesture=false;chatVoiceStartY=e.clientY;toggleVoiceRecording();});
+document.addEventListener("pointermove",e=>{if(!chatVoiceHoldActive)return;const movedUp=chatVoiceStartY-e.clientY>65;if(movedUp!==chatVoiceCancelGesture){chatVoiceCancelGesture=movedUp;$("chatRecordingPopup").classList.toggle("cancel-ready",movedUp);$("chatRecordingHint").textContent=movedUp?"ارفع إصبعك الآن لإلغاء التسجيل":"جاري التسجيل · اسحب لأعلى للإلغاء";}});
 const releaseVoiceHold=()=>{if(!chatVoiceHoldActive)return;chatVoiceHoldActive=false;const cancel=chatVoiceCancelGesture;chatVoiceCancelGesture=false;$("chatRecordingPopup").classList.remove("cancel-ready");if(chatMediaRecorder?.state==="recording"){chatVoiceAutoSend=!cancel;stopChatRecording(cancel);}else if(chatVoiceStarting){chatVoiceAutoSend=!cancel;chatVoiceReleasePending=true;chatVoiceDiscardPending=cancel;}};
-voiceBtn.addEventListener("pointerup",releaseVoiceHold);voiceBtn.addEventListener("pointercancel",releaseVoiceHold);voiceBtn.addEventListener("lostpointercapture",releaseVoiceHold);voiceBtn.addEventListener("contextmenu",e=>e.preventDefault());
+document.addEventListener("pointerup",releaseVoiceHold);document.addEventListener("pointercancel",releaseVoiceHold);voiceBtn.addEventListener("contextmenu",e=>e.preventDefault());
 
 const quickPlusButton=$("chatQuickRepliesBtn"),composer=$("chatComposer"),inputShell=$("chatComposer").querySelector(".chat-input-shell");
 if(quickPlusButton&&inputShell)composer.insertBefore(quickPlusButton,inputShell);
