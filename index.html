@@ -93,7 +93,7 @@ body:has(#chatPage.chat-screen.active){overflow:hidden}
 .chat-composer.has-text .chat-send{display:grid}.chat-composer.has-text #chatVoiceRecord{display:none}
 .chat-sticker-panel{max-width:900px;margin:8px auto 0;padding:10px;background:#202020;border:1px solid #444;border-radius:14px}
 .chat-sticker-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
-.chat-sticker-grid button{min-height:44px;border-radius:10px;background:#303030;color:white;font-size:25px}
+.chat-sticker-grid button{min-height:44px;border-radius:10px;background:#303030;color:white;font-size:25px}.chat-sticker-grid button img{width:100%;height:64px;object-fit:contain}.chat-sticker-grid>div{position:relative}
 
 .chat-audio-draft{direction:ltr;flex:1 1 100%;order:5}
 .chat-composer:has(.chat-audio-draft:not([hidden])) .chat-input-shell,.chat-composer:has(.chat-audio-draft:not([hidden])) .chat-camera-button{display:none}
@@ -299,7 +299,7 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
     <div id="chatAudioDraft" class="chat-audio-draft" hidden><span id="chatRecordStatus" class="chat-record-status">00:00</span><audio id="chatAudioPreview" controls preload="metadata"></audio><button type="button" id="chatAudioCancel" class="chat-audio-cancel">إلغاء</button></div>
     <button class="chat-quick-plus" id="chatQuickRepliesBtn" type="button" hidden aria-label="الردود السريعة" title="الردود السريعة">+</button>
     <button class="chat-send" id="chatSend" type="button" aria-label="إرسال"><span class="chat-send-label">إرسال</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 20 18-8L3 4l2 7 10 1-10 1-2 7Z"/></svg></button>
-  </div><div id="chatStickerPanel" class="chat-sticker-panel" hidden><p class="muted" style="margin:0 0 8px">اختَر صورة من جهازك لإرسالها كملصق</p><button type="button" id="chatChooseSticker" class="primary">＋ إضافة ملصق من الجهاز</button><p class="muted" style="margin:8px 0 0">سيتم إرسال الصورة بحجم ملصق داخل المحادثة.</p></div><div id="chatQuickRepliesPanel" class="chat-quick-panel" hidden><strong>الردود السريعة</strong><div id="chatQuickRepliesList"></div><div class="chat-quick-add"><input id="chatQuickReplyInput" class="field" maxlength="300" placeholder="اكتب ردًا سريعًا جديدًا"><button type="button" class="primary" id="chatQuickReplyAdd">إضافة</button></div></div></div>
+  </div><div id="chatStickerPanel" class="chat-sticker-panel" hidden><p class="muted" style="margin:0 0 8px">ملصقاتي المحفوظة</p><div id="chatSavedStickers" class="chat-sticker-grid"></div><button type="button" id="chatChooseSticker" class="primary" style="margin-top:9px">＋ إضافة صورة كملصق</button><div id="chatStickerOptions" hidden style="margin-top:10px;display:grid;gap:8px"><img id="chatStickerPreview" alt="معاينة الملصق" style="max-width:140px;max-height:140px;object-fit:contain;margin:auto"><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="chatStickerOriginal" class="smallbtn">استخدم الصورة كما هي</button><button type="button" id="chatStickerRemoveBg" class="smallbtn">إزالة الخلفية</button></div><p class="muted" style="margin:0">سيتم إرسال الملصق وحفظه لاستخدامه مرة أخرى على هذا الجهاز.</p></div></div><div id="chatQuickRepliesPanel" class="chat-quick-panel" hidden><strong>الردود السريعة</strong><div id="chatQuickRepliesList"></div><div class="chat-quick-add"><input id="chatQuickReplyInput" class="field" maxlength="300" placeholder="اكتب ردًا سريعًا جديدًا"><button type="button" class="primary" id="chatQuickReplyAdd">إضافة</button></div></div></div>
 </section>
 <section id="adminMessagesPage" class="page"><button class="btn navback" id="adminMessagesBack">← الرئيسية</button><div class="adminbox"><h2>الرسائل</h2><input id="adminChatSearch" class="admin-chat-search" type="search" placeholder="ابحث باسم المستخدم أو الرسائل..." autocomplete="off"><div id="adminChatList"></div></div></section>
 <section id="purchasePage" class="page"><button class="btn navback" id="purchaseBack">← العودة</button><div class="adminbox"><h2>إتمام الشراء</h2><div id="purchaseProductInfo" class="notice"></div><h3>1- قم بتحويل المبلغ المطلوب</h3><p id="purchasePrice" class="price-tag"></p><p class="muted">اختر طريقة الدفع المناسبة لك:</p><div class="pills" style="flex-wrap:wrap"><button class="pill" id="vodafonePay">🔴 Vodafone Cash</button><button class="pill" id="instapayPay">🟣 InstaPay</button></div><div id="paymentNumbers" class="notice" style="margin-top:12px"></div><h3>2- ارفع اسكرين التحويل</h3><input id="transferProof" class="field" type="file" accept="image/*"><p class="muted">سيتم ضغط الصورة تلقائيًا لتناسب مساحة التخزين.</p><h3>3- اضغط التالي لإرسال الطلب للمطور</h3><button class="primary" id="submitPurchase" style="width:100%">التالي</button><p id="purchaseMessage" class="muted"></p></div></section>
@@ -461,6 +461,7 @@ let categories = ["الكل"], categoryDocs = [];
 let posts = [], category = "الكل", lang = localStorage.getItem("og-lang") || "ar";
 const requestPublishImages = Object.create(null);
 let chatMediaRecorder = null, chatAudioChunks = [], chatPendingAudio = "", chatRecordingStream = null, chatRecordingTimer = null, chatRecordingTicker = null, chatRecordingStartedAt = 0, chatDiscardRecording = false;
+let chatVoiceHoldActive=false,chatVoiceReleasePending=false,chatVoiceAutoSend=false,chatVoiceStarting=false,chatPendingStickerImage="";
 const adminRequestOwnerCache = {};
 let theme = localStorage.getItem("og-theme") || "dark";
 let onlineClicks=0, gamesClicks=0, adminSequenceReady=false;
@@ -830,16 +831,16 @@ function renderMessages(box,snap){
 }
 async function markChatRead(uid,adminView){try{await updateDoc(doc(db,"chats",uid),adminView?{unreadForAdmin:0}:{unreadForUser:0});}catch(e){console.warn("تعذر تحديث حالة قراءة المحادثة",e);}}
 async function watchChat(uid,adminView){if(activeChatUnsub)activeChatUnsub();await markChatRead(uid,adminView);const ref=collection(db,"chats",uid,"messages");activeChatUnsub=onSnapshot(query(ref,orderBy("createdAt","asc")),async snap=>{renderMessages($("chatMessages"),snap);await markChatRead(uid,adminView);},e=>{$("chatError").textContent="تعذر تحميل الرسائل: "+e.message;});}
-async function sendChatMessage(audioData=""){
+async function sendChatMessage(audioData="",imageOverride="",forceSticker=false){
   if(!currentUser)return showPage("loginPage");
-  const input=$("chatInput"),text=input.value.trim(),photoFile=$("chatImageInput").files?.[0],stickerFile=$("chatStickerImageInput").files?.[0],file=stickerFile||photoFile,isSticker=!!stickerFile;
-  if(!text&&!file&&!audioData)return;
+  const input=$("chatInput"),text=input.value.trim(),photoFile=$("chatImageInput").files?.[0],stickerFile=$("chatStickerImageInput").files?.[0],file=stickerFile||photoFile,isSticker=!!stickerFile||!!forceSticker;
+  if(!text&&!file&&!imageOverride&&!audioData)return;
   const adminSender=isAdminUid(currentUser.uid);
   const uid=adminSender?window.adminChatTarget:currentUser.uid;
   if(!uid)return;
   try{
     let image="";
-    if(file){
+    if(imageOverride){image=imageOverride;}else if(file){
       if(!file.type.startsWith("image/"))throw new Error("اختر صورة فقط");
       image=await compressImage(file,isSticker?300000:420000,isSticker?700:900,.58);
       if(image.length>(isSticker?420000:600000))throw new Error("الصورة كبيرة، اختر صورة أصغر");
@@ -954,7 +955,7 @@ async function toggleVoiceRecording(){
   if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="function"){error.textContent="المتصفح لا يتيح الوصول للمايكروفون. افتح التطبيق في Safari أو Chrome محدّث واسمح باستخدام المايكروفون.";return;}
   if(typeof window.MediaRecorder==="undefined"){error.textContent="تسجيل الصوت غير مدعوم في هذا المتصفح. جرّب تحديث Safari أو Chrome.";return;}
   clearChatAudioDraft();
-  btn.disabled=true;
+  chatVoiceStarting=true;
   try{
     const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     chatRecordingStream=stream;chatAudioChunks=[];chatDiscardRecording=false;
@@ -978,18 +979,21 @@ async function toggleVoiceRecording(){
       if(!blob.size){error.textContent="لم يصل صوت من المايكروفون. تأكد من إذن المايكروفون ومن عدم استخدام تطبيق آخر له.";clearChatAudioDraft();return;}
       if(blob.size>350000){error.textContent="حجم التسجيل كبير جدًا. سجّل مدة أقصر ثم أعد الإرسال.";clearChatAudioDraft();return;}
       const reader=new FileReader();
-      reader.onload=()=>{const data=String(reader.result||"");if(data.length>480000){error.textContent="حجم التسجيل كبير جدًا للإرسال. سجّل مدة أقصر.";clearChatAudioDraft();return;}chatPendingAudio=data;const preview=$("chatAudioPreview");preview.src=data;preview.hidden=false;$("chatAudioCancel").textContent="إلغاء";$("chatRecordStatus").textContent="معاينة";$("chatAudioDraft").hidden=false;};
+      reader.onload=async()=>{const data=String(reader.result||"");if(data.length>480000){error.textContent="حجم التسجيل كبير جدًا للإرسال. سجّل مدة أقصر.";clearChatAudioDraft();return;}if(chatVoiceAutoSend){chatVoiceAutoSend=false;error.textContent="جارٍ إرسال التسجيل...";const sent=await sendChatMessage(data);if(sent){clearChatAudioDraft();error.textContent="تم إرسال التسجيل.";}chatMediaRecorder=null;return;}chatPendingAudio=data;const preview=$("chatAudioPreview");preview.src=data;preview.hidden=false;$("chatAudioCancel").textContent="إلغاء";$("chatRecordStatus").textContent="معاينة";$("chatAudioDraft").hidden=false;};
       reader.onerror=()=>{error.textContent="تعذر تجهيز التسجيل الصوتي للإرسال.";clearChatAudioDraft();};
       reader.readAsDataURL(blob);
     };
     recorder.start(500);
+    chatVoiceStarting=false;btn.disabled=false;
     chatRecordingStartedAt=Date.now();
     if(chatRecordingTicker)clearInterval(chatRecordingTicker);
     chatRecordingTicker=setInterval(()=>{const sec=Math.min(60,Math.floor((Date.now()-chatRecordingStartedAt)/1000));$("chatRecordStatus").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");},250);
     btn.textContent="⏹️";btn.classList.add("recording");btn.title="اضغط لإيقاف التسجيل ومراجعته";
     $("chatRecordStatus").textContent="00:00";$("chatAudioDraft").hidden=false;$("chatAudioPreview").hidden=true;$("chatAudioCancel").textContent="إلغاء التسجيل";
-    chatRecordingTimer=setTimeout(()=>{if(chatMediaRecorder?.state==="recording"){ $("chatRecordStatus").textContent="01:00";stopChatRecording(false);}},60000);
+    chatRecordingTimer=setTimeout(()=>{if(chatMediaRecorder?.state==="recording"){ $("chatRecordStatus").textContent="01:00";chatVoiceAutoSend=true;stopChatRecording(false);}},60000);
+    if(chatVoiceReleasePending){chatVoiceReleasePending=false;chatVoiceAutoSend=true;stopChatRecording(false);}
   }catch(e){
+    chatVoiceStarting=false;
     if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;
     btn.disabled=false;btn.textContent="🎙️";btn.classList.remove("recording");$("chatAudioDraft").hidden=true;
     const name=e?.name||"";
@@ -1001,12 +1005,26 @@ async function toggleVoiceRecording(){
 }
 $("chatAudioCancel").onclick=()=>{if(chatMediaRecorder?.state==="recording"){stopChatRecording(true);$("chatAudioDraft").hidden=true;return;}clearChatAudioDraft();$("chatAudioPreview").hidden=false;$("chatAudioCancel").textContent="إلغاء";};
 
-$("chatVoiceRecord").addEventListener("click",toggleVoiceRecording);
+const voiceBtn=$("chatVoiceRecord");
+voiceBtn.addEventListener("pointerdown",e=>{if(e.button!==undefined&&e.button!==0)return;e.preventDefault();chatVoiceHoldActive=true;chatVoiceReleasePending=false;chatVoiceAutoSend=true;voiceBtn.setPointerCapture?.(e.pointerId);toggleVoiceRecording();});
+const releaseVoiceHold=()=>{if(!chatVoiceHoldActive)return;chatVoiceHoldActive=false;if(chatMediaRecorder?.state==="recording"){chatVoiceAutoSend=true;stopChatRecording(false);}else if(chatVoiceStarting){chatVoiceReleasePending=true;}};
+voiceBtn.addEventListener("pointerup",releaseVoiceHold);voiceBtn.addEventListener("pointercancel",releaseVoiceHold);voiceBtn.addEventListener("lostpointercapture",releaseVoiceHold);voiceBtn.addEventListener("contextmenu",e=>e.preventDefault());
 
 $("chatCameraBtn").onclick=()=>$("chatImageInput").click();
-$("chatStickerBtn").onclick=()=>{const panel=$("chatStickerPanel");panel.hidden=!panel.hidden;};
+const STICKER_DB_NAME="og-chat-stickers-v1";
+function openStickerDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(STICKER_DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains("stickers"))req.result.createObjectStore("stickers",{keyPath:"id"});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+async function getSavedStickers(){const dbx=await openStickerDB();return new Promise((resolve,reject)=>{const tx=dbx.transaction("stickers","readonly"),r=tx.objectStore("stickers").getAll();r.onsuccess=()=>resolve((r.result||[]).sort((a,b)=>b.savedAt-a.savedAt));r.onerror=()=>reject(r.error);});}
+async function saveSticker(data){const dbx=await openStickerDB(),all=await getSavedStickers(),item={id:"st_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),data,savedAt:Date.now()};return new Promise((resolve,reject)=>{const tx=dbx.transaction("stickers","readwrite"),store=tx.objectStore("stickers");store.put(item);if(all.length>=60)store.delete(all.sort((a,b)=>a.savedAt-b.savedAt)[0].id);tx.oncomplete=()=>resolve(item);tx.onerror=()=>reject(tx.error);});}
+async function deleteSticker(id){const dbx=await openStickerDB();return new Promise((resolve,reject)=>{const tx=dbx.transaction("stickers","readwrite");tx.objectStore("stickers").delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
+async function renderSavedStickers(){const box=$("chatSavedStickers");if(!box)return;try{const items=await getSavedStickers();box.innerHTML=items.length?items.map(x=>`<div><button type="button" data-use-sticker="${x.id}" title="إرسال الملصق"><img src="${x.data}" alt="ملصق محفوظ"></button><button type="button" data-delete-sticker="${x.id}" title="حذف" style="position:absolute;top:-5px;left:-5px;min-height:20px;width:20px;padding:0;border-radius:50%;background:#a22;color:white">×</button></div>`).join(""):'<p class="muted" style="grid-column:1/-1">لا توجد ملصقات محفوظة بعد.</p>';}catch(e){box.innerHTML='<p class="muted">تعذر تحميل الملصقات المحفوظة.</p>';}}
+function prepareStickerImage(file){return new Promise((resolve,reject)=>{const img=new Image(),reader=new FileReader();reader.onerror=reject;reader.onload=()=>{img.onload=()=>{const scale=Math.min(1,700/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);let q=.78,data=c.toDataURL("image/webp",q);while(data.length>360000&&q>.35){q-=.08;data=c.toDataURL("image/webp",q);}if(data.length>420000)reject(new Error("الصورة كبيرة جدًا كملصق، اختر صورة أصغر."));else resolve(data);};img.onerror=reject;img.src=reader.result;};reader.readAsDataURL(file);});}
+function removeSimpleBackground(dataUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas"),scale=Math.min(1,700/Math.max(img.width,img.height));c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(img,0,0,c.width,c.height);const im=ctx.getImageData(0,0,c.width,c.height),d=im.data,w=c.width,h=c.height,seen=new Uint8Array(w*h),stack=[];const idx=(x,y)=>y*w+x;for(let x=0;x<w;x++)stack.push(idx(x,0),idx(x,h-1));for(let y=1;y<h-1;y++)stack.push(idx(0,y),idx(w-1,y));const base=[d[0],d[1],d[2]],tol=58;while(stack.length){const p=stack.pop();if(seen[p])continue;seen[p]=1;const k=p*4,dist=Math.abs(d[k]-base[0])+Math.abs(d[k+1]-base[1])+Math.abs(d[k+2]-base[2]);if(dist>tol*3)continue;d[k+3]=0;const x=p%w,y=(p/w)|0;if(x>0)stack.push(p-1);if(x<w-1)stack.push(p+1);if(y>0)stack.push(p-w);if(y<h-1)stack.push(p+w);}ctx.putImageData(im,0,0);const out=c.toDataURL("image/webp",.78);if(out.length>420000)reject(new Error("الملصق بعد إزالة الخلفية حجمه كبير؛ جرّب صورة أصغر."));else resolve(out);};img.onerror=reject;img.src=dataUrl;});}
+$("chatStickerBtn").onclick=()=>{const panel=$("chatStickerPanel");panel.hidden=!panel.hidden;if(!panel.hidden)renderSavedStickers();};
 $("chatChooseSticker").onclick=()=>$("chatStickerImageInput").click();
-$("chatStickerImageInput").addEventListener("change",async()=>{const f=$("chatStickerImageInput").files?.[0];if(!f)return;$("chatStickerPanel").hidden=true;try{const sent=await sendChatMessage("");if(sent)$("chatError").textContent="تم إرسال الملصق.";}finally{$("chatStickerImageInput").value="";}});
+$("chatStickerImageInput").addEventListener("change",async()=>{const f=$("chatStickerImageInput").files?.[0];if(!f)return;try{chatPendingStickerImage=await prepareStickerImage(f);$("chatStickerPreview").src=chatPendingStickerImage;$("chatStickerOptions").hidden=false;}catch(e){$("chatError").textContent=e.message||"تعذر تجهيز الصورة";}finally{$("chatStickerImageInput").value="";}});
+async function sendChosenSticker(removeBg){if(!chatPendingStickerImage)return;try{let data=chatPendingStickerImage;if(removeBg)data=await removeSimpleBackground(data);const sent=await sendChatMessage("",data,true);if(sent){await saveSticker(data);$("chatError").textContent="تم إرسال الملصق وحفظه لاستخدامه مرة أخرى.";$("chatStickerOptions").hidden=true;chatPendingStickerImage="";$("chatStickerPanel").hidden=true;await renderSavedStickers();}}catch(e){$("chatError").textContent="تعذر إرسال الملصق: "+(e.message||"خطأ");}}
+$("chatStickerOriginal").onclick=()=>sendChosenSticker(false);$("chatStickerRemoveBg").onclick=()=>sendChosenSticker(true);
+$("chatSavedStickers").addEventListener("click",async e=>{const del=e.target.closest("[data-delete-sticker]");if(del){await deleteSticker(del.dataset.deleteSticker);await renderSavedStickers();return;}const use=e.target.closest("[data-use-sticker]");if(use){const item=(await getSavedStickers()).find(x=>x.id===use.dataset.useSticker);if(item){const sent=await sendChatMessage("",item.data,true);if(sent)$("chatError").textContent="تم إرسال الملصق.";}}});
 $("chatInput").addEventListener("input",()=>$("chatComposer").classList.toggle("has-text",!!$("chatInput").value.trim()));
 
 $("chatQuickRepliesBtn").onclick=()=>{if(!isAdmin)return;const panel=$("chatQuickRepliesPanel");panel.hidden=!panel.hidden;if(!panel.hidden)renderQuickReplies();};
