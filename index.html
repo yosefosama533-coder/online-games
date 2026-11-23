@@ -86,16 +86,16 @@ body:has(#chatPage.chat-screen.active){overflow:hidden}
 .chat-camera-button svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .chat-input-shell{position:relative;display:flex;align-items:center;flex:1;min-width:0}
 .chat-input-shell .chat-text-input{width:100%;height:48px;padding:0 52px 0 16px;border-radius:26px;background:#292929;border:1px solid #414141;direction:rtl;font-size:16px}
-.chat-sticker-btn{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:23px;height:23px;background:transparent;color:#f4f4f4;border:1.5px solid currentColor;border-radius:7px 7px 7px 2px;font-size:0}
-.chat-sticker-btn:before{content:"";position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;background:#292929;border-left:2px solid currentColor;border-top:2px solid currentColor;border-radius:0 0 0 7px}
-.chat-voice-button{background:#18c878;color:#071b12;border:0;width:48px;height:48px;min-width:48px;flex-basis:48px;font-size:22px}
+.chat-sticker-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:17px;height:17px;background:transparent;color:#f4f4f4;border:1.5px solid currentColor;border-radius:7px 7px 7px 2px;font-size:0}
+.chat-sticker-btn:before{content:"";position:absolute;right:-2px;bottom:-2px;width:6px;height:6px;background:#292929;border-left:2px solid currentColor;border-top:2px solid currentColor;border-radius:0 0 0 7px}
+.chat-voice-button{touch-action:none;user-select:none;-webkit-user-select:none;background:#18c878;color:#071b12;border:0;width:48px;height:48px;min-width:48px;flex-basis:48px;font-size:22px}
 .chat-send{display:none;width:48px;height:48px;flex:0 0 48px;border-radius:50%;background:#18c878;color:#071b12}
 .chat-composer.has-text .chat-send{display:grid}.chat-composer.has-text #chatVoiceRecord{display:none}
 .chat-sticker-panel{max-width:900px;margin:8px auto 0;padding:10px;background:#202020;border:1px solid #444;border-radius:14px}
 .chat-sticker-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
 .chat-sticker-grid button{min-height:44px;border-radius:10px;background:#303030;color:white;font-size:25px}.chat-sticker-grid button img{width:100%;height:64px;object-fit:contain}.chat-sticker-grid>div{position:relative}
 
-.chat-audio-draft{direction:ltr;flex:1 1 100%;order:5}
+.chat-recording-popup{position:absolute;z-index:1000;left:50%;bottom:82px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid #3d5549;border-radius:16px;background:#17231d;color:#fff;box-shadow:0 8px 28px #0008;white-space:nowrap}.chat-recording-popup[hidden]{display:none}.chat-recording-dot{width:9px;height:9px;border-radius:50%;background:#ff4545;box-shadow:0 0 0 5px #ff454522}.chat-recording-countdown{font-variant-numeric:tabular-nums;font-weight:800;color:#6df0a7;min-width:42px;text-align:center}.chat-bottom{position:relative}.chat-audio-draft{direction:ltr;flex:1 1 100%;order:5}
 .chat-composer:has(.chat-audio-draft:not([hidden])) .chat-input-shell,.chat-composer:has(.chat-audio-draft:not([hidden])) .chat-camera-button{display:none}
 .chat-composer:has(.chat-audio-draft:not([hidden])) .chat-send{display:flex}
 @media(max-width:420px){.chat-composer{gap:5px}.chat-camera-button{width:38px;flex-basis:38px}.chat-voice-button,.chat-send{width:44px;height:44px;min-width:44px;flex-basis:44px}.chat-input-shell .chat-text-input{height:46px}}
@@ -296,10 +296,10 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
     <div class="chat-input-shell"><input id="chatInput" class="chat-text-input" placeholder="اكتب رسالة..." autocomplete="off"><button type="button" id="chatStickerBtn" class="chat-sticker-btn" aria-label="الملصقات" title="الملصقات">▢</button></div>
     <button class="chat-camera-button" id="chatCameraBtn" type="button" title="إرفاق صورة" aria-label="إرفاق صورة"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5 10 3h4l1.5 2H19a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3.5Z"/><circle cx="12" cy="12" r="3.5"/></svg></button>
     <button class="chat-voice-button" id="chatVoiceRecord" type="button" title="تسجيل رسالة صوتية" aria-label="تسجيل رسالة صوتية">🎙️</button>
-    <div id="chatAudioDraft" class="chat-audio-draft" hidden><span id="chatRecordStatus" class="chat-record-status">00:00</span><audio id="chatAudioPreview" controls preload="metadata"></audio><button type="button" id="chatAudioCancel" class="chat-audio-cancel">إلغاء</button></div>
+    <div id="chatAudioDraft" class="chat-audio-draft" hidden><span id="chatRecordStatus" class="chat-record-status">00:00</span></div>
     <button class="chat-quick-plus" id="chatQuickRepliesBtn" type="button" hidden aria-label="الردود السريعة" title="الردود السريعة">+</button>
     <button class="chat-send" id="chatSend" type="button" aria-label="إرسال"><span class="chat-send-label">إرسال</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 20 18-8L3 4l2 7 10 1-10 1-2 7Z"/></svg></button>
-  </div><div id="chatStickerPanel" class="chat-sticker-panel" hidden><p class="muted" style="margin:0 0 8px">ملصقاتي المحفوظة</p><div id="chatSavedStickers" class="chat-sticker-grid"></div><button type="button" id="chatChooseSticker" class="primary" style="margin-top:9px">＋ إضافة صورة كملصق</button><div id="chatStickerOptions" hidden style="margin-top:10px;display:grid;gap:8px"><img id="chatStickerPreview" alt="معاينة الملصق" style="max-width:140px;max-height:140px;object-fit:contain;margin:auto"><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="chatStickerOriginal" class="smallbtn">استخدم الصورة كما هي</button><button type="button" id="chatStickerRemoveBg" class="smallbtn">إزالة الخلفية</button></div><p class="muted" style="margin:0">سيتم إرسال الملصق وحفظه لاستخدامه مرة أخرى على هذا الجهاز.</p></div></div><div id="chatQuickRepliesPanel" class="chat-quick-panel" hidden><strong>الردود السريعة</strong><div id="chatQuickRepliesList"></div><div class="chat-quick-add"><input id="chatQuickReplyInput" class="field" maxlength="300" placeholder="اكتب ردًا سريعًا جديدًا"><button type="button" class="primary" id="chatQuickReplyAdd">إضافة</button></div></div></div>
+  </div><div id="chatRecordingPopup" class="chat-recording-popup" hidden><span class="chat-recording-dot"></span><strong>جاري تسجيل الرسالة الصوتية</strong><span id="chatRecordingCountdown" class="chat-recording-countdown">02:00</span></div><div id="chatStickerPanel" class="chat-sticker-panel" hidden><p class="muted" style="margin:0 0 8px">ملصقاتي المحفوظة</p><div id="chatSavedStickers" class="chat-sticker-grid"></div><button type="button" id="chatChooseSticker" class="primary" style="margin-top:9px">＋ إضافة صورة كملصق</button><div id="chatStickerOptions" hidden style="margin-top:10px;display:grid;gap:8px"><img id="chatStickerPreview" alt="معاينة الملصق" style="max-width:140px;max-height:140px;object-fit:contain;margin:auto"><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="chatStickerOriginal" class="smallbtn">استخدم الصورة كما هي</button><button type="button" id="chatStickerRemoveBg" class="smallbtn">إزالة الخلفية</button></div><p class="muted" style="margin:0">سيتم إرسال الملصق وحفظه لاستخدامه مرة أخرى على هذا الجهاز.</p></div></div><div id="chatQuickRepliesPanel" class="chat-quick-panel" hidden><strong>الردود السريعة</strong><div id="chatQuickRepliesList"></div><div class="chat-quick-add"><input id="chatQuickReplyInput" class="field" maxlength="300" placeholder="اكتب ردًا سريعًا جديدًا"><button type="button" class="primary" id="chatQuickReplyAdd">إضافة</button></div></div></div>
 </section>
 <section id="adminMessagesPage" class="page"><button class="btn navback" id="adminMessagesBack">← الرئيسية</button><div class="adminbox"><h2>الرسائل</h2><input id="adminChatSearch" class="admin-chat-search" type="search" placeholder="ابحث باسم المستخدم أو الرسائل..." autocomplete="off"><div id="adminChatList"></div></div></section>
 <section id="purchasePage" class="page"><button class="btn navback" id="purchaseBack">← العودة</button><div class="adminbox"><h2>إتمام الشراء</h2><div id="purchaseProductInfo" class="notice"></div><h3>1- قم بتحويل المبلغ المطلوب</h3><p id="purchasePrice" class="price-tag"></p><p class="muted">اختر طريقة الدفع المناسبة لك:</p><div class="pills" style="flex-wrap:wrap"><button class="pill" id="vodafonePay">🔴 Vodafone Cash</button><button class="pill" id="instapayPay">🟣 InstaPay</button></div><div id="paymentNumbers" class="notice" style="margin-top:12px"></div><h3>2- ارفع اسكرين التحويل</h3><input id="transferProof" class="field" type="file" accept="image/*"><p class="muted">سيتم ضغط الصورة تلقائيًا لتناسب مساحة التخزين.</p><h3>3- اضغط التالي لإرسال الطلب للمطور</h3><button class="primary" id="submitPurchase" style="width:100%">التالي</button><p id="purchaseMessage" class="muted"></p></div></section>
@@ -944,7 +944,14 @@ $("adminNavHome").onclick=()=>showPage("home");$("adminNavMessages").onclick=()=
 function getQuickReplies(){try{const v=JSON.parse(localStorage.getItem("og-admin-quick-replies")||"[]");return Array.isArray(v)?v.filter(x=>typeof x==="string"&&x.trim()).slice(0,40):[];}catch(_){return [];}}
 function saveQuickReplies(items){localStorage.setItem("og-admin-quick-replies",JSON.stringify(items.slice(0,40)));renderQuickReplies();}
 function renderQuickReplies(){const box=$("chatQuickRepliesList");if(!box)return;const items=getQuickReplies();box.innerHTML=items.length?items.map((v,i)=>`<div class="chat-quick-row"><button type="button" data-send-quick-reply="${i}">${escapeHtml(v)}</button><button type="button" data-delete-quick-reply="${i}" aria-label="حذف الرد">×</button></div>`).join(""):'<p class="muted">لا توجد ردود سريعة بعد. أضف ردًا من الأسفل.</p>'; }
-function clearChatAudioDraft(){if(chatRecordingTicker){clearInterval(chatRecordingTicker);chatRecordingTicker=null;}chatPendingAudio="";const preview=$("chatAudioPreview");if(preview){preview.pause();preview.removeAttribute("src");preview.load();}$("chatAudioDraft").hidden=true;$("chatRecordStatus").textContent="التسجيل جاهز";}
+function clearChatAudioDraft(){
+  if(chatRecordingTicker){clearInterval(chatRecordingTicker);chatRecordingTicker=null;}
+  chatPendingAudio="";
+  const popup=$("chatRecordingPopup");if(popup)popup.hidden=true;
+  $("chatAudioDraft").hidden=true;
+  $("chatRecordStatus").textContent="00:00";
+  $("chatRecordingCountdown").textContent="02:00";
+}
 function stopChatRecording(discard=false){if(!chatMediaRecorder||chatMediaRecorder.state!=="recording")return;chatDiscardRecording=discard;if(chatRecordingTimer){clearTimeout(chatRecordingTimer);chatRecordingTimer=null;}try{chatMediaRecorder.requestData();}catch(_){}chatMediaRecorder.stop();}
 async function toggleVoiceRecording(){
   if(!currentUser){showPage("loginPage");return;}
@@ -968,29 +975,41 @@ async function toggleVoiceRecording(){
     chatMediaRecorder=recorder;
     recorder.ondataavailable=e=>{if(e.data&&e.data.size)chatAudioChunks.push(e.data);};
     recorder.onerror=e=>{error.textContent="حصل خطأ من مسجل الصوت: "+(e.error?.message||e.message||"تعذر التسجيل");if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;clearChatAudioDraft();};
-    recorder.onstop=()=>{
+    recorder.onstop=async()=>{
       if(chatRecordingTimer){clearTimeout(chatRecordingTimer);chatRecordingTimer=null;}
       if(chatRecordingTicker){clearInterval(chatRecordingTicker);chatRecordingTicker=null;}
       if(chatRecordingStream)chatRecordingStream.getTracks().forEach(t=>t.stop());chatRecordingStream=null;
-      btn.textContent="🎙️";btn.classList.remove("recording");btn.title="تسجيل رسالة صوتية";btn.disabled=false;
+      btn.textContent="🎙️";btn.classList.remove("recording");btn.disabled=false;
+      const shouldSend=chatVoiceAutoSend;chatVoiceAutoSend=false;
       if(chatDiscardRecording){chatDiscardRecording=false;clearChatAudioDraft();return;}
       const mimeType=recorder.mimeType||chatAudioChunks[0]?.type||"audio/mp4";
       const blob=new Blob(chatAudioChunks,{type:mimeType});
-      if(!blob.size){error.textContent="لم يصل صوت من المايكروفون. تأكد من إذن المايكروفون ومن عدم استخدام تطبيق آخر له.";clearChatAudioDraft();return;}
-      if(blob.size>350000){error.textContent="حجم التسجيل كبير جدًا. سجّل مدة أقصر ثم أعد الإرسال.";clearChatAudioDraft();return;}
+      if(!blob.size){error.textContent="لم يصل صوت من المايكروفون. تأكد من إذن المايكروفون.";clearChatAudioDraft();chatMediaRecorder=null;return;}
+      if(blob.size>350000){error.textContent="التسجيل تجاوز الحد المسموح لحجم الرسالة.";clearChatAudioDraft();chatMediaRecorder=null;return;}
       const reader=new FileReader();
-      reader.onload=async()=>{const data=String(reader.result||"");if(data.length>480000){error.textContent="حجم التسجيل كبير جدًا للإرسال. سجّل مدة أقصر.";clearChatAudioDraft();return;}if(chatVoiceAutoSend){chatVoiceAutoSend=false;error.textContent="جارٍ إرسال التسجيل...";const sent=await sendChatMessage(data);if(sent){clearChatAudioDraft();error.textContent="تم إرسال التسجيل.";}chatMediaRecorder=null;return;}chatPendingAudio=data;const preview=$("chatAudioPreview");preview.src=data;preview.hidden=false;$("chatAudioCancel").textContent="إلغاء";$("chatRecordStatus").textContent="معاينة";$("chatAudioDraft").hidden=false;};
-      reader.onerror=()=>{error.textContent="تعذر تجهيز التسجيل الصوتي للإرسال.";clearChatAudioDraft();};
+      reader.onload=async()=>{
+        const data=String(reader.result||"");
+        if(data.length>480000){error.textContent="حجم التسجيل أكبر من الحد المسموح.";clearChatAudioDraft();chatMediaRecorder=null;return;}
+        if(shouldSend){
+          error.textContent="جارٍ إرسال التسجيل...";
+          const sent=await sendChatMessage(data);
+          error.textContent=sent?"تم إرسال التسجيل.":"تعذر إرسال التسجيل، تحقق من الاتصال.";
+        }
+        clearChatAudioDraft();chatMediaRecorder=null;
+      };
+      reader.onerror=()=>{error.textContent="تعذر تجهيز التسجيل الصوتي للإرسال.";clearChatAudioDraft();chatMediaRecorder=null;};
       reader.readAsDataURL(blob);
     };
     recorder.start(500);
     chatVoiceStarting=false;btn.disabled=false;
     chatRecordingStartedAt=Date.now();
     if(chatRecordingTicker)clearInterval(chatRecordingTicker);
-    chatRecordingTicker=setInterval(()=>{const sec=Math.min(60,Math.floor((Date.now()-chatRecordingStartedAt)/1000));$("chatRecordStatus").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");},250);
-    btn.textContent="⏹️";btn.classList.add("recording");btn.title="اضغط لإيقاف التسجيل ومراجعته";
-    $("chatRecordStatus").textContent="00:00";$("chatAudioDraft").hidden=false;$("chatAudioPreview").hidden=true;$("chatAudioCancel").textContent="إلغاء التسجيل";
-    chatRecordingTimer=setTimeout(()=>{if(chatMediaRecorder?.state==="recording"){ $("chatRecordStatus").textContent="01:00";chatVoiceAutoSend=true;stopChatRecording(false);}},60000);
+    const updateCountdown=()=>{const elapsed=Math.floor((Date.now()-chatRecordingStartedAt)/1000),remaining=Math.max(0,120-elapsed);$("chatRecordingCountdown").textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0");};
+    updateCountdown();
+    chatRecordingTicker=setInterval(updateCountdown,250);
+    btn.textContent="🎙️";btn.classList.add("recording");btn.title="ارفع إصبعك لإرسال التسجيل";
+    $("chatAudioDraft").hidden=true;$("chatRecordingPopup").hidden=false;
+    chatRecordingTimer=setTimeout(()=>{if(chatMediaRecorder?.state==="recording"){chatVoiceAutoSend=true;stopChatRecording(false);}},120000);
     if(chatVoiceReleasePending){chatVoiceReleasePending=false;chatVoiceAutoSend=true;stopChatRecording(false);}
   }catch(e){
     chatVoiceStarting=false;
@@ -1017,7 +1036,7 @@ async function getSavedStickers(){const dbx=await openStickerDB();return new Pro
 async function saveSticker(data){const dbx=await openStickerDB(),all=await getSavedStickers(),item={id:"st_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),data,savedAt:Date.now()};return new Promise((resolve,reject)=>{const tx=dbx.transaction("stickers","readwrite"),store=tx.objectStore("stickers");store.put(item);if(all.length>=60)store.delete(all.sort((a,b)=>a.savedAt-b.savedAt)[0].id);tx.oncomplete=()=>resolve(item);tx.onerror=()=>reject(tx.error);});}
 async function deleteSticker(id){const dbx=await openStickerDB();return new Promise((resolve,reject)=>{const tx=dbx.transaction("stickers","readwrite");tx.objectStore("stickers").delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
 async function renderSavedStickers(){const box=$("chatSavedStickers");if(!box)return;try{const items=await getSavedStickers();box.innerHTML=items.length?items.map(x=>`<div><button type="button" data-use-sticker="${x.id}" title="إرسال الملصق"><img src="${x.data}" alt="ملصق محفوظ"></button><button type="button" data-delete-sticker="${x.id}" title="حذف" style="position:absolute;top:-5px;left:-5px;min-height:20px;width:20px;padding:0;border-radius:50%;background:#a22;color:white">×</button></div>`).join(""):'<p class="muted" style="grid-column:1/-1">لا توجد ملصقات محفوظة بعد.</p>';}catch(e){box.innerHTML='<p class="muted">تعذر تحميل الملصقات المحفوظة.</p>';}}
-function prepareStickerImage(file){return new Promise((resolve,reject)=>{const img=new Image(),reader=new FileReader();reader.onerror=reject;reader.onload=()=>{img.onload=()=>{const scale=Math.min(1,700/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);let q=.78,data=c.toDataURL("image/webp",q);while(data.length>360000&&q>.35){q-=.08;data=c.toDataURL("image/webp",q);}if(data.length>420000)reject(new Error("الصورة كبيرة جدًا كملصق، اختر صورة أصغر."));else resolve(data);};img.onerror=reject;img.src=reader.result;};reader.readAsDataURL(file);});}
+function prepareStickerImage(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith("image/")){reject(new Error("اختر ملف صورة صالحًا."));return;}const img=new Image(),reader=new FileReader();reader.onerror=()=>reject(new Error("تعذر قراءة الصورة من الجهاز."));reader.onload=()=>{img.onload=()=>{let maxDim=1400,scale=Math.min(1,maxDim/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);let q=.86,data=c.toDataURL("image/webp",q);while(data.length>560000&&q>.30){q-=.07;data=c.toDataURL("image/webp",q);}while(data.length>560000&&maxDim>400){maxDim=Math.round(maxDim*.78);scale=Math.min(1,maxDim/Math.max(img.width,img.height));c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));ctx.drawImage(img,0,0,c.width,c.height);data=c.toDataURL("image/webp",.55);}if(data.length>580000)reject(new Error("تعذر ضغط الصورة لتناسب حد الرسالة. جرّب صورة بصيغة JPG أو PNG."));else resolve(data);};img.onerror=()=>reject(new Error("صيغة الصورة غير مدعومة."));img.src=reader.result;};reader.readAsDataURL(file);});}
 function removeSimpleBackground(dataUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas"),scale=Math.min(1,700/Math.max(img.width,img.height));c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(img,0,0,c.width,c.height);const im=ctx.getImageData(0,0,c.width,c.height),d=im.data,w=c.width,h=c.height,seen=new Uint8Array(w*h),stack=[];const idx=(x,y)=>y*w+x;for(let x=0;x<w;x++)stack.push(idx(x,0),idx(x,h-1));for(let y=1;y<h-1;y++)stack.push(idx(0,y),idx(w-1,y));const base=[d[0],d[1],d[2]],tol=58;while(stack.length){const p=stack.pop();if(seen[p])continue;seen[p]=1;const k=p*4,dist=Math.abs(d[k]-base[0])+Math.abs(d[k+1]-base[1])+Math.abs(d[k+2]-base[2]);if(dist>tol*3)continue;d[k+3]=0;const x=p%w,y=(p/w)|0;if(x>0)stack.push(p-1);if(x<w-1)stack.push(p+1);if(y>0)stack.push(p-w);if(y<h-1)stack.push(p+w);}ctx.putImageData(im,0,0);const out=c.toDataURL("image/webp",.78);if(out.length>420000)reject(new Error("الملصق بعد إزالة الخلفية حجمه كبير؛ جرّب صورة أصغر."));else resolve(out);};img.onerror=reject;img.src=dataUrl;});}
 $("chatStickerBtn").onclick=()=>{const panel=$("chatStickerPanel");panel.hidden=!panel.hidden;if(!panel.hidden)renderSavedStickers();};
 $("chatChooseSticker").onclick=()=>$("chatStickerImageInput").click();
