@@ -963,6 +963,44 @@ const VIP_PACKAGES={
   plus:{title:"VIP Plus",price:250,features:["كل مميزات الباقة العادية","علامة توثيق بجوار الاسم","لقب صديق التطبيق","لون الاسم ذهبي","نشر منشورات باسمك وظهورها في بروفايلك"],flags:{vipActive:true,vipPackage:"plus",vipChatBackground:true,vipAvatarFrame:true,vipStickersEnabled:true,vipVerified:true,vipFriendTitle:true,vipGoldName:true,vipPublishEnabled:true}}
 };
 function hasVipPlus(){return !!(currentUser&&userProfile?.vipActive===true&&userProfile?.vipPackage==="plus"&&userProfile?.vipPublishEnabled===true);}
+async function openMemberPublish(){
+  if(!requireFullAccount("لازم تسجل الدخول بحساب Google أو Facebook أولاً."))return;
+  try{
+    const fresh=await getDoc(doc(db,"profiles",currentUser.uid));
+    if(fresh.exists())userProfile={...userProfile,...fresh.data()};
+    if(!hasVipPlus()){alert("ميزة النشر متاحة لمشتركي VIP Plus الفعّالين فقط.");renderVipPage();return;}
+    const snap=await getDocs(collection(db,"categories"));
+    categoryDocs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>d.name);
+    const select=$("memberPostCategory"),previous=select.value;
+    select.innerHTML=categoryDocs.length?categoryDocs.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join(""):'<option value="">لا توجد أقسام متاحة</option>';
+    if(categoryDocs.some(c=>c.name===previous))select.value=previous;
+    $("memberPostSubcategory").innerHTML='<option value="">بدون قسم فرعي</option>';
+    $("memberPostTitle").value="";$("memberPostBody").value="";$("memberPostPrice").value="";$("memberPostImages").value="";$("memberPublishMessage").textContent="";
+    showPage("memberPublishPage");
+  }catch(e){console.error("openMemberPublish",e);alert("تعذر فتح صفحة النشر: "+(e?.message||e));}
+}
+async function publishMemberPost(){
+  if(!requireFullAccount("سجّل الدخول بحساب Google أو Facebook أولاً."))return;
+  if(!hasVipPlus()){alert("النشر متاح لمشتركي VIP Plus الفعّالين فقط.");return;}
+  const title=$("memberPostTitle").value.trim(),body=$("memberPostBody").value.trim(),cat=$("memberPostCategory").value,subcat=$("memberPostSubcategory").value||"",priceRaw=$("memberPostPrice").value.trim(),files=Array.from($("memberPostImages").files||[]);
+  const msg=$("memberPublishMessage"),button=$("memberPublishBtn");
+  if(!title||!body){msg.textContent="اكتب عنوان المنشور والتفاصيل أولاً.";return;}
+  if(!cat){msg.textContent="اختر القسم الرئيسي أولاً.";return;}
+  if(priceRaw!==""&&(!Number.isFinite(Number(priceRaw))||Number(priceRaw)<0)){msg.textContent="اكتب سعرًا صحيحًا أو اتركه فارغًا.";return;}
+  if(files.length>4||files.some(f=>!f.type.startsWith("image/"))){msg.textContent="يمكن إضافة 4 صور فقط، ويجب أن تكون صورًا.";return;}
+  try{
+    button.disabled=true;msg.textContent="جارٍ تجهيز المنشور...";
+    const images=[];for(const file of files)images.push(await compressImage(file,180000,700,0.48));
+    const profileSnap=await getDoc(doc(db,"profiles",currentUser.uid));
+    if(!profileSnap.exists())throw new Error("لم يتم العثور على ملفك الشخصي.");
+    const profile=profileSnap.data();
+    if(profile.vipActive!==true||profile.vipPackage!=="plus"||profile.vipPublishEnabled!==true)throw new Error("اشتراك VIP Plus غير فعال أو لا يملك صلاحية النشر.");
+    await addDoc(collection(db,"posts"),{cat,subcat,title,body,images,image:images[0]||"",price:priceRaw===""?0:Number(priceRaw),ownerId:currentUser.uid,ownerName:profile.name||currentUser.displayName||"عضو",ownerPhoto:profile.photo||currentUser.photoURL||"",ownerPublicId:profile.publicId||"",date:new Date().toISOString(),createdAt:serverTimestamp(),publishedByMember:true});
+    userProfile={...userProfile,...profile};msg.textContent="تم نشر منشورك بنجاح.";$("memberPostTitle").value="";$("memberPostBody").value="";$("memberPostPrice").value="";$("memberPostImages").value="";
+    category="الكل";showPage("home");
+  }catch(e){console.error("publishMemberPost",e);msg.textContent="تعذر نشر المنشور: "+(e?.message||e);}
+  finally{button.disabled=false;}
+}
 function renderVipPage(){const active=!!(userProfile?.vipActive);const plus=hasVipPlus();const panel=$("vipActivePanel");if(!panel)return;$("vipPackagesPanel").hidden=active;$("vipPurchasePanel").hidden=active||!selectedVipPackage;panel.hidden=!active;if(active){const name=plus?"VIP Plus":"الباقة العادية";const features=plus?["1000 نقطة مستوى","خلفية الشات وإطار الصورة","إضافة الملصقات","علامة التوثيق ولقب صديق التطبيق والاسم الذهبي","نشر المنشورات باسمك" ]:["1000 نقطة مستوى","خلفية الشات وإطار الصورة","إضافة الملصقات"];panel.innerHTML=`<h3>👑 أنت مشترك في ${name}</h3><p>اشتراكك مفعّل وتقدر تستخدم المميزات المتاحة لباقة حسابك.</p><ul>${features.map(x=>`<li>✓ ${escapeHtml(x)}</li>`).join("")}</ul>${plus?'<button type="button" class="primary" id="vipActivePublish">＋ نشر منشور جديد</button>':''}`;const b=$("vipActivePublish");if(b)b.onclick=openMemberPublish;}$("vipIntroText").textContent=active?"تفاصيل اشتراكك الحالي":"اختار الباقة المناسبة ليك واستمتع بالمميزات";$("vipPublishOpen").hidden=!plus;}
 function openVipPurchase(packageId){if(!currentUser){showPage("loginPage");return;}const pkg=VIP_PACKAGES[packageId];if(!pkg)return;selectedVipPackage=packageId;$("vipPurchaseTitle").textContent="شراء "+pkg.title;$("vipPurchasePrice").textContent="المبلغ المطلوب: "+pkg.price+" جنيه";$("vipTransferProof").value="";$("vipPurchaseMessage").textContent="";$("vipPurchasePanel").hidden=false;$("vipPurchasePanel").scrollIntoView({behavior:"smooth",block:"center"});}
 async function submitVipRequest(){if(!currentUser||!selectedVipPackage)return;const pkg=VIP_PACKAGES[selectedVipPackage],file=$("vipTransferProof").files?.[0];if(!file){$("vipPurchaseMessage").textContent="من فضلك ارفع صورة التحويل أولاً.";return;}try{$("vipSubmitRequest").disabled=true;$("vipPurchaseMessage").textContent="جارٍ تجهيز الطلب...";const proof=await compressProof(file);const ref=await addDoc(collection(db,"purchaseRequests"),{userId:currentUser.uid,userName:userProfile?.name||currentUser.displayName||"عضو",postId:"vip:"+selectedVipPackage,postTitle:"VIP · "+pkg.title,price:pkg.price,paymentMethod:"Vodafone Cash",paymentNumber:"01099202521",proof,status:"قيد المراجعة",vipPackage:selectedVipPackage,vipFeatures:pkg.features,createdAt:serverTimestamp()});$("vipPurchaseMessage").textContent="تم إرسال طلبك بنجاح. سيظهر للأدمن لمراجعة التحويل، وسيتم تفعيل المميزات بعد الموافقة.";$("vipMyStatus").textContent="طلبك "+pkg.title+" قيد المراجعة. رقم الطلب: "+ref.id;$("vipPurchasePanel").hidden=true;}catch(e){$("vipPurchaseMessage").textContent="تعذر إرسال الطلب: "+e.message;}finally{$("vipSubmitRequest").disabled=false;}}
