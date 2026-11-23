@@ -1022,7 +1022,7 @@ async function toggleVoiceRecording(){
     else error.textContent="تعذر تشغيل المايكروفون: "+(e.message||name||"خطأ غير معروف");
   }
 }
-$("chatAudioCancel").onclick=()=>{if(chatMediaRecorder?.state==="recording"){stopChatRecording(true);$("chatAudioDraft").hidden=true;return;}clearChatAudioDraft();$("chatAudioPreview").hidden=false;$("chatAudioCancel").textContent="إلغاء";};
+
 
 const voiceBtn=$("chatVoiceRecord");
 voiceBtn.addEventListener("pointerdown",e=>{if(e.button!==undefined&&e.button!==0)return;e.preventDefault();chatVoiceHoldActive=true;chatVoiceReleasePending=false;chatVoiceAutoSend=true;voiceBtn.setPointerCapture?.(e.pointerId);toggleVoiceRecording();});
