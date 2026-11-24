@@ -12,6 +12,20 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Activate the newest worker promptly when a new version is deployed.
+self.addEventListener("install", event => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil((async () => {
+    await self.clients.claim();
+  })());
+});
+
+// Deliberately do not cache HTML, JavaScript, Firebase data, or images here.
+// This worker handles push notifications only; avoiding a custom cache prevents
+// stale app screens and stale profile photos from being served by this worker.
 messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || "Online Games";
   const options = {
@@ -19,13 +33,21 @@ messaging.onBackgroundMessage((payload) => {
     icon: "./icon.svg",
     data: payload.data || {}
   };
-
-  self.registration.showNotification(title, options);
+  return self.registration.showNotification(title, options);
 });
 
-self.addEventListener("notificationclick", (event) => {
+self.addEventListener("notificationclick", event => {
   event.notification.close();
-  event.waitUntil(
-    clients.openWindow("./")
-  );
+  const targetUrl = new URL("./", self.location.href).href;
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of windows) {
+      if (client.url.startsWith(self.location.origin) && "focus" in client) {
+        await client.focus();
+        if ("navigate" in client) await client.navigate(targetUrl);
+        return;
+      }
+    }
+    await self.clients.openWindow(targetUrl);
+  })());
 });
