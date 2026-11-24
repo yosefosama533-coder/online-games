@@ -1,9 +1,11 @@
 {
+  "id": "./",
   "name": "Online Games",
   "short_name": "Games",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#1877f2",
   "icons": [
