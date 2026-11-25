@@ -146,6 +146,16 @@ body:has(#chatPage.chat-screen.active){overflow:hidden}
 @media(max-width:420px){.admin-accordion>summary{gap:8px;padding:11px}.admin-accordion-hint{display:none}.admin-accordion-title{font-size:14px}.admin-accordion-content{padding:11px}}
 
 .vip-avatar-frame{display:inline-grid;place-items:center;padding:4px;border-radius:50%;background:transparent}.vip-avatar-frame.is-vip{background:conic-gradient(#f6d36b,#fff1a8,#b77a16,#fff1a8,#f6d36b);box-shadow:0 0 0 2px #704e13,0 0 14px #d6a83f66}.vip-avatar-frame .profile-avatar-large{display:block;border-radius:50%;object-fit:cover}.comment-avatar-open{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 42px;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:transparent;cursor:pointer}.comment-avatar-open>.avatar{width:38px;height:38px}.comment-avatar-level{position:absolute;bottom:-5px;right:-7px;padding:1px 4px;border-radius:8px;background:#263d60;border:1px solid #54739c;color:#ffe08a;font-size:9px;font-weight:900;white-space:nowrap}.comment-avatar-open .verified-badge{position:absolute;top:-5px;left:-5px;width:17px;height:17px;margin:0;border:2px solid var(--panel)}.post-author{margin:10px 0 4px}.post-author-open{display:inline-flex;align-items:center;gap:9px;padding:6px 9px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);text-align:right}.post-author-open img{width:38px;height:38px}.post-author-open span{display:flex;flex-direction:column;gap:2px}.post-author-open small{font-size:11px;color:var(--muted)}
+
+/* Admin dashboard: full-screen section navigation */
+.admin-section-launcher{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.admin-launch-card{min-height:112px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;padding:16px;text-align:right;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,var(--panel),var(--panel2));color:var(--text);box-shadow:0 6px 18px #0002;cursor:pointer;transition:transform .18s,border-color .18s}
+.admin-launch-card:active{transform:scale(.98)}.admin-launch-card .launch-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:var(--blue);color:white;font-size:22px}.admin-launch-card strong{font-size:15px;font-weight:900}.admin-launch-card small{color:var(--muted);font-size:11px;line-height:1.5}
+.admin-fullpage.active{position:fixed;inset:0;z-index:10020;display:block!important;width:100%;height:100dvh;min-height:100dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);padding:calc(env(safe-area-inset-top) + 8px) 14px calc(env(safe-area-inset-bottom) + 24px)}
+.admin-fullpage .admin-fullpage-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;padding:10px 0 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.admin-fullpage .admin-fullpage-head h2{flex:1;margin:0;font-size:20px;font-weight:900}.admin-fullpage .adminbox{margin:14px 0 0;padding:16px;min-height:calc(100dvh - 105px);border-radius:18px}
+@media(min-width:700px){.admin-section-launcher{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-fullpage{padding-inline:clamp(24px,6vw,90px)}}
+
 </style>
 <style id="charge-storefront-modern-css">
 #charge.charge-modern{background:radial-gradient(ellipse at 50% 0%,#233a52 0%,#101a28 52%,#080e18 100%);min-height:100vh;padding-bottom:28px;color:#f4f1e8}
@@ -603,6 +613,42 @@ async function refreshPushNotificationUI() {
 }
 
 function showPage(id){const page=$(id);if(!page)return;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));page.classList.add("active");window.scrollTo({top:0,behavior:"smooth"});if(id==="settings")refreshPushNotificationUI();}
+
+// Turn each admin accordion into a dedicated full-screen management page.
+(function setupAdminFullScreenSections(){
+  const workspace=$("adminWorkspace");
+  const list=workspace?.querySelector(".admin-accordion-list");
+  if(!workspace||!list||list.dataset.fullscreenReady==="1")return;
+  list.dataset.fullscreenReady="1";
+  const launch=document.createElement("div");
+  launch.className="admin-section-launcher";
+  const adminPage=$("admin");
+  const pages=[];
+  Array.from(list.querySelectorAll(":scope > details.admin-accordion")).forEach((details,index)=>{
+    const summary=details.querySelector(":scope > summary");
+    const content=details.querySelector(":scope > .admin-accordion-content");
+    if(!summary||!content)return;
+    const title=summary.querySelector(".admin-accordion-title")?.textContent?.trim()||summary.textContent.trim();
+    const hint=summary.querySelector(".admin-accordion-hint")?.textContent?.trim()||"إدارة وإعدادات القسم";
+    const icon=summary.querySelector(".admin-accordion-icon")?.textContent?.trim()||"⚙️";
+    const pageId="adminManageSection"+index;
+    const card=document.createElement("button");
+    card.type="button";card.className="admin-launch-card";
+    card.innerHTML=`<span class="launch-icon"></span><strong></strong><small></small>`;
+    card.querySelector(".launch-icon").textContent=icon;card.querySelector("strong").textContent=title;card.querySelector("small").textContent=hint;
+    card.addEventListener("click",()=>showPage(pageId));
+    launch.appendChild(card);
+    const page=document.createElement("section");
+    page.id=pageId;page.className="page admin-fullpage";
+    const head=document.createElement("div");head.className="admin-fullpage-head";
+    const back=document.createElement("button");back.type="button";back.className="btn";back.textContent="← لوحة التحكم";back.addEventListener("click",()=>showPage("admin"));
+    const heading=document.createElement("h2");heading.textContent=title;head.append(back,heading);
+    const box=document.createElement("div");box.className="adminbox";
+    box.appendChild(content);page.append(head,box);pages.push(page);
+  });
+  list.replaceWith(launch);
+  pages.forEach(page=>adminPage?.after(page));
+})();
 
 $("pushNotificationsBtn")?.addEventListener("click", async () => {
   if (!currentUser) {
