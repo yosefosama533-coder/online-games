@@ -156,7 +156,7 @@ body:has(#chatPage.chat-screen.active){overflow:hidden}
 .admin-fullpage .admin-fullpage-head h2{flex:1;margin:0;font-size:20px;font-weight:900}.admin-fullpage .adminbox{margin:14px 0 0;padding:16px;min-height:calc(100dvh - 105px);border-radius:18px}
 @media(min-width:700px){.admin-section-launcher{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-fullpage{padding-inline:clamp(24px,6vw,90px)}}
 
-/* End v73 compact post card overrides */\n</style>
+</style>
 <style id="charge-storefront-modern-css">
 #charge.charge-modern{background:radial-gradient(ellipse at 50% 0%,#233a52 0%,#101a28 52%,#080e18 100%);min-height:100vh;padding-bottom:28px;color:#f4f1e8}
 #charge.charge-modern .hero{background:linear-gradient(115deg,rgba(20,35,50,.96),rgba(42,57,69,.88)),linear-gradient(90deg,#c8a65b,#e8d28e);border:1px solid rgba(226,193,112,.5);border-radius:16px;padding:22px;margin:12px 0;box-shadow:0 14px 35px #0006}
@@ -402,89 +402,21 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 </div>
 <style>.lightbox.open{display:flex!important}
 /* Social-feed post layout inspired by the supplied reference */
-/* v73: compact social post cards */
-.og-social-post{
-  width:calc(100% - 24px)!important;
-  max-width:620px!important;
-  margin:10px auto 16px!important;
-  padding:0!important;
-  overflow:hidden!important;
-  border:1px solid var(--line)!important;
-  border-radius:15px!important;
-  background:var(--panel)!important;
-  box-shadow:0 5px 16px rgba(0,0,0,.10)!important;
-}
-.og-social-post .og-post-header{padding:10px 12px 7px!important}
-.og-social-post .og-author-avatar{width:40px!important;height:40px!important}
-.og-social-post .og-author-copy strong{font-size:14px!important}
-.og-social-post .og-author-copy small{font-size:11px!important}
-.og-social-post .og-three-dots{width:36px!important;height:34px!important;font-size:21px!important}
-.og-social-post .og-post-copy{padding:2px 12px 9px!important}
-.og-social-post .og-post-copy h3{font-size:16px!important;line-height:1.45!important;margin:3px 0 5px!important}
-.og-social-post .og-post-copy p{font-size:14px!important;line-height:1.6!important}
-.og-social-post .og-social-gallery{margin:0 auto!important;width:100%!important;max-height:270px!important;overflow:hidden!important}
-.og-social-post .og-social-gallery .post-image{
-  width:100%!important;
-  height:auto!important;
-  max-height:270px!important;
-  object-fit:contain!important;
-  border-radius:0!important;
-  margin:0!important;
-}
-.og-social-post .og-social-gallery .gallery-controls{padding:4px!important}
-.og-social-post .og-post-footer{min-height:48px!important;padding:7px 11px!important;gap:10px!important}
-.og-social-post .og-buy-btn{font-size:14px!important;padding:6px 4px!important}
-.og-social-post .og-price strong{font-size:13px!important}
-.og-social-post .og-social-action{font-size:13px!important;padding:5px 1px!important}
-.og-social-post .og-social-action span{font-size:19px!important}
-.og-social-post .post-video-link{margin:8px 12px!important;font-size:13px!important}
-@media(min-width:700px){
-  .og-social-post{width:calc(100% - 16px)!important;max-width:560px!important}
-}
-
-.og-post-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px 8px;direction:rtl}
-.og-post-author{min-width:0;flex:1}.og-author-open{display:flex;align-items:center;gap:9px;width:100%;padding:0;background:transparent;color:var(--text);text-align:right}
-.og-author-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid #ffffff30;flex:0 0 auto}
-.og-author-copy{display:flex;flex-direction:column;min-width:0;gap:2px}.og-author-copy strong{font-size:16px;font-weight:850;line-height:1.25}.og-author-copy small{font-size:12px;color:var(--muted)}
-.og-post-more{margin:0!important;flex:0 0 auto}.og-three-dots{width:42px;height:38px;border-radius:50%;background:transparent!important;color:var(--muted)!important;font-size:24px!important;font-weight:900;letter-spacing:2px;padding:0!important}
-.og-post-copy{padding:2px 15px 10px;direction:rtl;text-align:right}.og-post-copy h3{font-size:19px;font-weight:850;line-height:1.55;margin:3px 0 5px}.og-post-copy p{font-size:16px;line-height:1.65;margin:0;white-space:pre-wrap}
-.og-social-gallery{margin:0!important;width:100%;background:#111}.og-social-gallery .post-image{display:block;width:100%;height:auto;max-height:none!important;object-fit:contain;border-radius:0!important;margin:0!important;background:#111}
-.og-social-gallery .gallery-controls{padding:6px;margin:0;background:#111;color:white}.og-social-gallery .gallery-controls span{color:#fff}
-.og-post-footer{display:flex;align-items:center;gap:13px;min-height:58px;padding:9px 14px;direction:ltr;background:var(--panel)}
-.og-buy-btn{order:0;background:transparent!important;color:var(--blue)!important;font-size:16px;font-weight:900;padding:8px 5px!important;white-space:nowrap}
-.og-price{order:1;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;color:var(--text);font-weight:900}.og-price strong{font-size:15px}.og-price small{font-size:11px;color:var(--muted);text-decoration:line-through}
-.og-footer-spacer{flex:1}.og-social-action{display:inline-flex;align-items:center;gap:6px;background:transparent!important;color:var(--muted)!important;padding:7px 2px!important;font-size:15px;font-weight:700;white-space:nowrap}.og-social-action span{font-size:22px}.og-social-action b{font-weight:650}.og-social-action.og-liked{color:#1877f2!important}.og-social-action.og-liked span{filter:drop-shadow(0 1px 2px #1877f266)}
+.og-social-post{width:94%;max-width:760px;margin:10px auto 16px!important;padding:0!important;overflow:hidden!important;border-radius:14px!important;background:var(--panel)!important;border:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important;box-shadow:0 4px 14px rgba(0,0,0,.10)!important}
+.og-post-header{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:10px 12px 7px;direction:rtl}
+.og-post-author{min-width:0;flex:1}.og-author-open{display:flex;align-items:center;gap:8px;width:100%;padding:0;background:transparent;color:var(--text);text-align:right}
+.og-author-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid #ffffff30;flex:0 0 auto}
+.og-author-copy{display:flex;flex-direction:column;min-width:0;gap:2px}.og-author-copy strong{font-size:14px;font-weight:850;line-height:1.25}.og-author-copy small{font-size:11px;color:var(--muted)}
+.og-post-more{margin:0!important;flex:0 0 auto}.og-three-dots{width:38px;height:36px;border-radius:50%;background:transparent!important;color:var(--muted)!important;font-size:22px!important;font-weight:900;letter-spacing:2px;padding:0!important}
+.og-post-copy{padding:2px 12px 9px;direction:rtl;text-align:right}.og-post-copy h3{font-size:17px;font-weight:850;line-height:1.45;margin:3px 0 5px}.og-post-copy p{font-size:14px;line-height:1.6;margin:0;white-space:pre-wrap}
+.og-social-gallery{margin:0!important;width:100%;max-height:300px;overflow:hidden;background:#111}.og-social-gallery .post-image{display:block;width:100%;height:auto;max-height:300px!important;object-fit:contain;border-radius:0!important;margin:0!important;background:#111}
+.og-social-gallery .gallery-controls{padding:5px;margin:0;background:#111;color:white}.og-social-gallery .gallery-controls span{color:#fff}
+.og-post-footer{display:flex;align-items:center;gap:10px;min-height:50px;padding:7px 11px;direction:ltr;background:var(--panel)}
+.og-buy-btn{order:0;background:transparent!important;color:var(--blue)!important;font-size:14px;font-weight:900;padding:8px 5px!important;white-space:nowrap}
+.og-price{order:1;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;color:var(--text);font-weight:900}.og-price strong{font-size:13px}.og-price small{font-size:11px;color:var(--muted);text-decoration:line-through}
+.og-footer-spacer{flex:1}.og-social-action{display:inline-flex;align-items:center;gap:5px;background:transparent!important;color:var(--muted)!important;padding:6px 2px!important;font-size:13px;font-weight:700;white-space:nowrap}.og-social-action span{font-size:19px}.og-social-action b{font-weight:650}.og-social-action.og-liked{color:#1877f2!important}.og-social-action.og-liked span{filter:drop-shadow(0 1px 2px #1877f266)}
 .og-pin-label{font-size:12px;font-weight:800;color:#e7c66a;padding:0 14px 7px}.og-social-post .post-video-link{display:block;margin:10px 14px;color:var(--blue)}
 
-
-/* v74: keep post price visible beside the comments counter */
-.og-social-post .og-post-footer{
-  display:flex!important;
-  align-items:center!important;
-  direction:ltr!important;
-  flex-wrap:nowrap!important;
-}
-.og-social-post .og-buy-btn{order:0!important;flex:0 0 auto!important}
-.og-social-post .og-footer-spacer{order:1!important;flex:1 1 auto!important;min-width:4px!important}
-.og-social-post .og-price{
-  order:2!important;
-  display:flex!important;
-  flex:0 0 auto!important;
-  visibility:visible!important;
-  opacity:1!important;
-  white-space:nowrap!important;
-  margin-inline:0!important;
-  padding:0 3px!important;
-}
-.og-social-post .og-price strong{display:block!important;font-size:13px!important;white-space:nowrap!important}
-.og-social-post .og-price small{display:block!important;font-size:10px!important;white-space:nowrap!important}
-.og-social-post .og-social-action{flex:0 0 auto!important}
-.og-social-post .og-post-footer [data-comments-toggle],
-.og-social-post .og-post-footer [data-comment-toggle],
-.og-social-post .og-post-footer [data-open-comments]{
-  order:3!important;
-}
-.og-social-post .og-post-footer [data-like]{order:4!important}
 </style>
 <div id="adminPostEditScreen" class="admin-post-edit-screen" hidden><div class="admin-post-edit-head"><strong>تعديل المنشور</strong><button type="button" class="smallbtn" id="adminPostEditClose">✕ إغلاق</button></div><div id="adminPostEditContent"></div></div>
 <div id="profilePhotoActions" class="profile-photo-actions"><div><strong id="profilePhotoActionTitle">صورة البروفايل</strong><button type="button" id="profilePhotoView">👁️ عرض الصورة</button><button type="button" id="profilePhotoChange">🖼️ تغيير الصورة</button><button type="button" id="profilePhotoCancel">إلاء</button></div></div>
