@@ -413,7 +413,7 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 .og-social-gallery .gallery-controls{padding:5px;margin:0;background:#111;color:white}.og-social-gallery .gallery-controls span{color:#fff}
 .og-post-footer{display:flex;align-items:center;gap:10px;min-height:50px;padding:7px 11px;direction:ltr;background:var(--panel)}
 .og-buy-btn{order:0;background:transparent!important;color:var(--blue)!important;font-size:14px;font-weight:900;padding:8px 5px!important;white-space:nowrap}
-.og-price{order:1;display:flex;flex-direction:column;align-items:center;line-height:1.2;color:var(--text);font-weight:900;white-space:nowrap;margin-inline:5px}.og-price strong{font-size:12px}.og-price small{font-size:11px;color:var(--muted);text-decoration:line-through}
+.og-price{order:0;display:flex;flex-direction:column;align-items:center;line-height:1.2;color:var(--text);font-weight:900;white-space:nowrap;margin-inline:5px}.og-price strong{font-size:12px}.og-price small{font-size:11px;color:var(--muted);text-decoration:line-through}
 .og-footer-spacer{flex:1}.og-social-action{display:inline-flex;align-items:center;gap:5px;background:transparent!important;color:var(--muted)!important;padding:6px 2px!important;font-size:13px;font-weight:700;white-space:nowrap}.og-social-action span{font-size:19px}.og-social-action b{font-weight:650}.og-social-action.og-liked{color:#1877f2!important}.og-social-action.og-liked span{filter:drop-shadow(0 1px 2px #1877f266)}
 .og-pin-label{font-size:12px;font-weight:800;color:#e7c66a;padding:0 14px 7px}.og-social-post .post-video-link{display:block;margin:10px 14px;color:var(--blue)}
 
@@ -729,8 +729,8 @@ function postCard(p, categoryMode=false){
   <footer class="og-post-footer">
    ${p.sold?'<span class="og-sold">تم البيع</span>':`<button class="og-buy-btn" type="button" data-buy-post="${escapeHtml(p.id)}">الشراء</button>`}
    <span class="og-footer-spacer"></span>
-   ${!p.sold&&price>0?`<div class="og-price">${Number(p.oldPrice)>price?`<small>${escapeHtml(p.oldPrice)} ج</small>`:""}<strong>${escapeHtml(p.price)} جنيه</strong></div>`:""}
    <button class="og-social-action" ${toggleAttr}="${escapeHtml(p.id)}"><span>💬</span><b>${(p.comments||[]).length}</b></button>
+   ${!p.sold&&price>0?`<div class="og-price">${Number(p.oldPrice)>price?`<small>${escapeHtml(p.oldPrice)} ج</small>`:""}<strong>${escapeHtml(p.price)} جنيه</strong></div>`:""}
    <button class="og-social-action ${p.likedByMe?"og-liked":""}" data-like="${escapeHtml(p.id)}"><span>👍</span><b>${Number(p.likes||0)}</b></button>
   </footer>
  </article>`;
