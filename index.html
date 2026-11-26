@@ -1020,39 +1020,47 @@ $("adminCategories").addEventListener("change",async e=>{const input=e.target.cl
 $("adminCategories").addEventListener("click",async e=>{
  const edit=e.target.closest("[data-edit-category]");
  if(edit&&isAdmin){
-  const oldId=edit.dataset.editCategory, record=categoryDocs.find(c=>c.id===oldId);if(!record)return;
+  e.preventDefault();e.stopPropagation();
+  const oldId=edit.dataset.editCategory,record=categoryDocs.find(c=>c.id===oldId);
+  if(!record){alert("القسم غير موجود في القائمة الحالية. حدّث الصفحة وحاول مرة أخرى.");return;}
   const oldName=record.name,name=prompt("الاسم الجديد للقسم:",oldName);
-  if(name&&name.trim()&&name.trim()!==oldName){
-   try{
-    const newName=name.trim(),oldRef=doc(db,"categories",oldId),newRef=doc(db,"categories",slugFor(newName));
-    if((await getDoc(newRef)).exists())throw new Error("اسم القسم موجود بالفعل.");
-    await setDoc(newRef,{...record,name:newName,updatedAt:serverTimestamp()});
-    const childSnap=await getDocs(collection(db,"categories",oldId,"subcategories"));
-    for(const child of childSnap.docs)await setDoc(doc(db,"categories",slugFor(newName),"subcategories",child.id),child.data());
-    const postSnap=await getDocs(collection(db,"posts"));
-    for(const d of postSnap.docs)if(d.data().cat===oldName)await updateDoc(doc(db,"posts",d.id),{cat:newName});
-    for(const child of childSnap.docs)await deleteDoc(doc(db,"categories",oldId,"subcategories",child.id));
-    await deleteDoc(oldRef);
-   }catch(err){alert("تعذر تعديل القسم: "+err.message);}
-  }return;
+  if(name===null)return;
+  const newName=name.trim();if(!newName||newName===oldName)return;
+  if(categoryDocs.some(c=>c.id!==oldId&&String(c.name||"").trim()===newName)){alert("اسم القسم موجود بالفعل.");return;}
+  try{
+   edit.disabled=true;
+   // Keep the original Firestore document ID; rename the existing record instead of creating a duplicate.
+   await updateDoc(doc(db,"categories",oldId),{name:newName,updatedAt:serverTimestamp()});
+   const postSnap=await getDocs(collection(db,"posts"));
+   for(const d of postSnap.docs)if(d.data().cat===oldName)await updateDoc(doc(db,"posts",d.id),{cat:newName});
+   alert("تم تعديل اسم القسم بنجاح.");
+  }catch(err){alert("تعذر تعديل القسم: "+(err?.message||err));}
+  finally{edit.disabled=false;}
+  return;
  }
- const b=e.target.closest("[data-delete-category]");if(!b||!isAdmin)return;
- const categoryId=b.dataset.deleteCategory,name=b.dataset.categoryName||categoryDocs.find(c=>c.id===categoryId)?.name||"";
- if(!confirm(`حذف القسم الرئيسي «${name}» نهائيًا؟ سيتم حذف أقسامه الفرعية ونقل منشوراته إلى كل الألعاب.`))return;
- try{
-  const childSnap=await getDocs(collection(db,"categories",categoryId,"subcategories"));
-  for(const child of childSnap.docs)await deleteDoc(doc(db,"categories",categoryId,"subcategories",child.id));
-  await deleteDoc(doc(db,"categories",categoryId));
-  const postSnap=await getDocs(collection(db,"posts"));let failedMoves=0;
-  for(const d of postSnap.docs)if(d.data().cat===name){try{await updateDoc(doc(db,"posts",d.id),{cat:"الكل",subcat:""});}catch(_){failedMoves++;}}
-  if(failedMoves)alert(`تم حذف القسم نهائيًا، لكن تعذر نقل ${failedMoves} منشورًا بسبب صلاحيات Firestore.`);
- }catch(err){alert("لم يتم حذف القسم: "+err.message);}
-});
+ const del=e.target.closest("[data-delete-category]");
+ if(del&&isAdmin){
+  e.preventDefault();e.stopPropagation();
+  const categoryId=del.dataset.deleteCategory,name=del.dataset.categoryName||categoryDocs.find(c=>c.id===categoryId)?.name||"";
+  if(!categoryId){alert("معرّف القسم غير موجود.");return;}
+  if(!confirm(`حذف القسم الرئيسي «${name}» نهائيًا؟ سيتم حذف أقسامه الفرعية ونقل منشوراته إلى كل الألعاب.`))return;
+  try{
+   del.disabled=true;
+   const childSnap=await getDocs(collection(db,"categories",categoryId,"subcategories"));
+   for(const child of childSnap.docs)await deleteDoc(doc(db,"categories",categoryId,"subcategories",child.id));
+   const postSnap=await getDocs(collection(db,"posts"));let failedMoves=0;
+   for(const d of postSnap.docs)if(d.data().cat===name){try{await updateDoc(doc(db,"posts",d.id),{cat:"الكل",subcat:""});}catch(_){failedMoves++;}}
+   await deleteDoc(doc(db,"categories",categoryId));
+   alert(failedMoves?`تم حذف القسم، لكن تعذر نقل ${failedMoves} منشورًا بسبب صلاحيات Firestore.`:"تم حذف القسم بنجاح.");
+  }catch(err){alert("لم يتم حذف القسم: "+(err?.message||err));}
+  finally{del.disabled=false;}
+ }
+},true);
 $("addCategory").onclick=async()=>{if(!isAdmin)return;const name=$("newCategory").value.trim(),file=$("newCategoryIcon")?.files?.[0];if(!name||categories.includes(name)){alert("اكتب اسم قائمة جديد غير مكرر");return;}try{let iconData="";if(file){if(!file.type.startsWith("image/"))throw new Error("اختر صورة صحيحة.");iconData=await compressImage(file,150000,360,.68);}await setDoc(doc(db,"categories",slugFor(name)),{name,iconData,createdAt:serverTimestamp()});$("newCategory").value="";if($("newCategoryIcon"))$("newCategoryIcon").value="";}catch(e){alert("تعذر إضافة القائمة: "+e.message);}};
 $("subParent").onchange=()=>{watchSubcategories($("subParent").value);renderAdminSubcategories();};
 $("postCategory").onchange=async()=>{const parent=$("postCategory").value;try{const snap=await getDocs(collection(db,"categories",(categoryDocs.find(c=>c.name===parent)?.id||slugFor(parent)),"subcategories"));$("postSubcategory").innerHTML="<option value=\"\">بدون قسم فرعي</option>"+snap.docs.map(d=>`<option value="${escapeHtml(d.data().name)}">${escapeHtml(d.data().name)}</option>`).join("");}catch(e){console.error(e);}};
 $("addSubcategory").onclick=async()=>{if(!isAdmin)return;const parent=$("subParent").value,name=$("newSubcategory").value.trim();if(!name)return;try{await setDoc(doc(db,"categories",(categoryDocs.find(c=>c.name===parent)?.id||slugFor(parent)),"subcategories",slugFor(name)),{name,createdAt:serverTimestamp()});$("newSubcategory").value="";}catch(e){alert("تعذر إضافة القسم الفرعي: "+e.message);}};
-$("adminSubcategories").addEventListener("click",async e=>{const ed=e.target.closest("[data-edit-sub]"),del=e.target.closest("[data-del-sub]");const parent=$("subParent").value;if(ed&&isAdmin){const old=subcategories.find(x=>x.id===ed.dataset.editSub);const name=prompt("الاسم الجديد للقسم الفرعي:",old?.name||"");if(name&&name.trim()){try{await updateDoc(doc(db,"categories",slugFor(parent),"subcategories",ed.dataset.editSub),{name:name.trim()});const snap=await getDocs(collection(db,"posts"));for(const d of snap.docs)if(d.data().cat===parent&&d.data().subcat===old?.name)await updateDoc(doc(db,"posts",d.id),{subcat:name.trim()});}catch(err){alert(err.message);}}}if(del&&isAdmin&&confirm("حذف القسم الفرعي؟")){try{await deleteDoc(doc(db,"categories",(categoryDocs.find(c=>c.name===parent)?.id||slugFor(parent)),"subcategories",del.dataset.delSub));}catch(err){alert(err.message);}}});
+$("adminSubcategories").addEventListener("click",async e=>{const ed=e.target.closest("[data-edit-sub]"),del=e.target.closest("[data-del-sub]");const parent=$("subParent").value;if(ed&&isAdmin){const old=subcategories.find(x=>x.id===ed.dataset.editSub);const name=prompt("الاسم الجديد للقسم الفرعي:",old?.name||"");if(name&&name.trim()){try{const parentId=categoryDocs.find(c=>c.name===parent)?.id||slugFor(parent);await updateDoc(doc(db,"categories",parentId,"subcategories",ed.dataset.editSub),{name:name.trim()});const snap=await getDocs(collection(db,"posts"));for(const d of snap.docs)if(d.data().cat===parent&&d.data().subcat===old?.name)await updateDoc(doc(db,"posts",d.id),{subcat:name.trim()});}catch(err){alert(err.message);}}}if(del&&isAdmin&&confirm("حذف القسم الفرعي؟")){try{await deleteDoc(doc(db,"categories",(categoryDocs.find(c=>c.name===parent)?.id||slugFor(parent)),"subcategories",del.dataset.delSub));}catch(err){alert(err.message);}}});
 $("profileBtn").onclick=async()=>{if(!requireFullAccount("الزائر لا يملك بروفايل. سجّل الدخول بفيسبوك أو جوجل أولاً."))return;await loadMyProfile();showPage("profilePage");};$("profileBack").onclick=()=>showPage("home");$("saveProfile").onclick=saveMyProfile;$("editProfileToggle").onclick=()=>{if(!requireFullAccount("تعديل البروفايل متاح بعد تسجيل الدخول بفيسبوك أو جوجل."))return;showPage("profileEditPage");};$("profileEditBack").onclick=()=>showPage("profilePage");let selectedProfileImage="avatar";$("profilePreview").addEventListener("click",e=>{const level=e.target.closest("[data-level-open]");if(level){openLevelDetails(userProfile,"profilePage");return;}const im=e.target.closest("[data-profile-image]");if(!im)return;selectedProfileImage=im.dataset.profileImage||"avatar";if(im.dataset.ownImage==="1"){$("profilePhotoActionTitle").textContent=selectedProfileImage==="cover"?"صورة الغلاف":"صورة البروفايل";$("profilePhotoActions").classList.add("open");}else{showProfileImage(im);}});function showProfileImage(im){$("lightboxImage").src=im.src;$("imageLightbox").classList.add("open");$("lightboxPrev").style.display="none";$("lightboxNext").style.display="none";}$("profilePhotoCancel").onclick=()=>$("profilePhotoActions").classList.remove("open");$("profilePhotoView").onclick=()=>{const im=$("profilePreview").querySelector(`[data-profile-image="${selectedProfileImage}"]`);$("profilePhotoActions").classList.remove("open");if(im&&im.tagName==="IMG")showProfileImage(im);else alert("لا توجد صورة لعرضها بعد.");};$("profilePhotoChange").onclick=()=>{$("profilePhotoActions").classList.remove("open");$(selectedProfileImage==="cover"?"profileCover":"profilePhoto").click();};
 document.addEventListener("click",e=>{const target=e.target.closest("[data-profile]");if(!target)return;const uid=target.dataset.profile;if(!uid)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(target.dataset.ownerPostId)window.profileReturnPostId=target.dataset.ownerPostId;const fromComments=!!target.closest("#commentsPageList");window.profileReturnToComments=fromComments;if(fromComments&&$("commentsPage"))$("commentsPage").hidden=true;const back=target.closest("#categoryFeed")?"categoryPage":target.closest("#publicProfilePosts")?"publicProfilePage":target.closest("#profilePage")?"profilePage":"home";openPublicProfile(uid,back,{name:target.dataset.profileName||"",photo:target.dataset.profilePhoto||""});},true);
 async function openPublicProfile(uid,returnPage,fallback={}){if(!uid)return;if(currentUser&&uid===currentUser.uid&&!isAdmin){window.profileReturnToComments=false;await loadMyProfile();showPage("profilePage");return;}window.adminProfileReturnPage=returnPage||"home";window.adminViewedProfileUid=uid;showPage("publicProfilePage");const box=$("publicProfileContent");box.innerHTML='<p class="muted">جارٍ تحميل الملف الشخصي...</p>';try{const snap=await getDoc(doc(db,"profiles",uid));if(!snap.exists()&&!isAdminUid(uid)&&!fallback.name){box.innerHTML='<p class="muted">هذا العضو لم يكمل ملفه الشخصي بعد.</p>';return;}const raw=snap.exists()?snap.data():(isAdminUid(uid)?{name:"المطور",photo:fallback.photo||"",cover:"",bio:"",publicId:"DEVELOPER",points:0,level:1,country:"EG"}:{name:fallback.name||"مستخدم",photo:fallback.photo||"",cover:"",bio:"",publicId:"",points:0,level:1});if(isAdminUid(uid)){const hoursSnap=await getDoc(doc(db,"appInfo","workingHours"));adminWorkingHours=hoursSnap.exists()?(hoursSnap.data().text||""):"";}const u={...raw};let owned=[];try{const ps=await getDocs(query(collection(db,"posts"),where("ownerId","==",uid),limit(50)));owned=ps.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>postDate(b)-postDate(a));}catch(err){console.warn("تعذر تحميل منشورات العضو",err);}owned.forEach(x=>{const i=posts.findIndex(p=>p.id===x.id);if(i>=0)posts[i]={...posts[i],...x};else posts.push(x);});const contactActions=isAdmin?`<div class="profile-contact-actions"><button class="primary" id="adminProfileChatOpen" type="button">💬 فتح دردشة مع هذا العضو</button></div>`:isAdminUid(uid)?`<div class="profile-contact-actions"><button class="primary" id="developerChatOpen" type="button">💬 الدردشة مع الادمن</button><button class="primary" id="developerGuaranteeOpen" type="button" style="background:#168c55">🛡️ ضمان التعامل</button></div>`:"";box.innerHTML=(window.profileReturnPostId?`<button type="button" class="smallbtn" id="returnToSourcePost">↩ الرجوع للمنشور</button>`:"")+profileMarkup(u,uid,false)+`${vipIsActive(u)&&u.vipPackage==="plus"?'<div class="notice">👑 عضو VIP Plus · صديق التطبيق</div>':u.vipActive?'<div class="notice">👑 عضو VIP</div>':''}${contactActions}<section class="admin-section"><h3>📝 منشورات ${escapeHtml(u.name||"العضو")}</h3><div id="publicProfilePosts">${owned.length?owned.map(x=>postCard({...x,likes:0,comments:[] })).join(''):'<p class="muted">لا توجد منشورات منشورة حتى الآن.</p>'}</div></section>`;const returnPostBtn=$("returnToSourcePost");if(returnPostBtn)returnPostBtn.onclick=()=>{const postId=window.profileReturnPostId;window.profileReturnPostId="";showPage(window.adminProfileReturnPage||"home");setTimeout(()=>document.getElementById("post-"+postId)?.scrollIntoView({behavior:"smooth",block:"center"}),80);};const chatBtn=$("adminProfileChatOpen");if(chatBtn)chatBtn.onclick=()=>openAdminRequestOwnerChat(uid);const guaranteeBtn=$("developerGuaranteeOpen");if(guaranteeBtn)guaranteeBtn.onclick=()=>{showPage("guaranteePage");loadGuarantees();};}catch(e){box.innerHTML='<p class="muted">تعذر تحميل الملف الشخصي: '+escapeHtml(e.message)+'</p>';}}
