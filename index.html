@@ -420,7 +420,14 @@ onclick="document.querySelectorAll('.page').forEach(function(x){x.classList.remo
 .og-post-footer{display:flex;align-items:center;gap:10px;min-height:50px;padding:7px 11px;direction:ltr;background:var(--panel)}
 .og-buy-btn{order:0;background:transparent!important;color:var(--blue)!important;font-size:14px;font-weight:900;padding:8px 5px!important;white-space:nowrap}
 .og-price{order:0;display:flex;flex-direction:column;align-items:center;line-height:1.2;color:var(--text);font-weight:900;white-space:nowrap;margin-inline:5px}.og-price strong{font-size:12px}.og-price small{font-size:11px;color:var(--muted);text-decoration:line-through}.og-price-pill{order:0;flex:0 0 auto;padding:6px 9px;border:1px solid #9b72df;border-radius:8px;background:rgba(155,114,223,.13);margin:0 2px;box-shadow:0 1px 4px rgba(0,0,0,.12)}.og-price-pill strong{font-size:12px}.og-price-pill small{font-size:10px}
-.og-post-footer .og-price-pill{order:1;align-self:center;min-width:max-content;margin-inline:2px}.og-post-footer .og-footer-spacer{order:0}.og-post-footer .og-social-action{order:2}
+/* تثبيت السعر بجوار التعليقات فعليًا باستخدام Grid بدل الاعتماد على ترتيب Flex */
+.og-social-post>.og-post-footer{display:grid!important;grid-template-columns:max-content minmax(0,1fr) max-content max-content max-content!important;align-items:center!important;column-gap:9px!important;direction:ltr!important}
+.og-social-post>.og-post-footer>.og-buy-btn{grid-column:1;justify-self:start}
+.og-social-post>.og-post-footer>.og-footer-spacer{grid-column:2;min-width:0;width:100%}
+.og-social-post>.og-post-footer>.og-price-pill{grid-column:3;justify-self:end;align-self:center;min-width:max-content;margin:0!important;padding:6px 9px!important;border:1px solid #9b72df!important;border-radius:8px!important;background:rgba(155,114,223,.18)!important;box-shadow:0 1px 4px rgba(0,0,0,.12)!important;color:var(--text)!important}
+.og-social-post>.og-post-footer>.og-social-action[data-comments],.og-social-post>.og-post-footer>.og-social-action[data-catcomments]{grid-column:4;justify-self:center}
+.og-social-post>.og-post-footer>.og-social-action[data-like]{grid-column:5;justify-self:end}
+.og-social-post>.og-post-footer>.og-price-pill strong{font-size:12px!important}.og-social-post>.og-post-footer>.og-price-pill small{font-size:10px!important}
 .og-footer-spacer{flex:1}.og-social-action{display:inline-flex;align-items:center;gap:5px;background:transparent!important;color:var(--muted)!important;padding:6px 2px!important;font-size:13px;font-weight:700;white-space:nowrap}.og-social-action span{font-size:19px}.og-social-action b{font-weight:650}.og-social-action.og-liked{color:#1877f2!important}.og-social-action.og-liked span{filter:drop-shadow(0 1px 2px #1877f266)}
 .og-pin-label{font-size:12px;font-weight:800;color:#e7c66a;padding:0 14px 7px}.og-social-post .post-video-link{display:block;margin:10px 14px;color:var(--blue)}
 
