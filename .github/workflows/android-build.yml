@@ -1,3 +1,4 @@
+
 name: Android AAB Build
 
 on:
@@ -24,14 +25,26 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # GitHub-hosted Ubuntu runners already include Android command-line tools.
-      # Do not use setup-android here: it tries to install the removed "tools" package.
       - name: Install Android SDK packages
         shell: bash
         run: |
+          set -e
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+
+          if [ ! -f "$SDKMANAGER" ]; then
+            echo "Android SDK Manager not found: $SDKMANAGER"
+            exit 1
+          fi
+
+          set +o pipefail
           yes | "$SDKMANAGER" --licenses
-          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          set -o pipefail
+
+          "$SDKMANAGER" --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -40,6 +53,11 @@ jobs:
       - name: Extract Android project
         run: |
           unzip -q OnlineGames-Android-TWA-project.zip -d android-src
+
+      - name: Verify Android project
+        run: |
+          test -f android-src/OnlineGames-Android-TWA/settings.gradle || \
+          test -f android-src/OnlineGames-Android-TWA/settings.gradle.kts
 
       - name: Build release AAB
         run: |
