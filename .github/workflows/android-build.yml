@@ -24,11 +24,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
+      # GitHub-hosted Ubuntu runners already include Android command-line tools.
+      # Do not use setup-android here: it tries to install the removed "tools" package.
       - name: Install Android SDK packages
+        shell: bash
         run: |
+          set -e
           yes | sdkmanager --licenses
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
@@ -38,10 +39,12 @@ jobs:
           gradle-version: '8.11.1'
 
       - name: Extract Android project
-        run: unzip -q OnlineGames-Android-TWA-project.zip -d android-src
+        run: |
+          unzip -q OnlineGames-Android-TWA-project.zip -d android-src
 
       - name: Build release AAB
-        run: gradle -p android-src/OnlineGames-Android-TWA bundleRelease
+        run: |
+          gradle -p android-src/OnlineGames-Android-TWA bundleRelease
 
       - name: Upload unsigned AAB artifact
         uses: actions/upload-artifact@v4
