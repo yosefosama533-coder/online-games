@@ -30,16 +30,9 @@ jobs:
         run: |
           set -e
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-
-          if [ ! -f "$SDKMANAGER" ]; then
-            echo "Android SDK Manager not found: $SDKMANAGER"
-            exit 1
-          fi
-
           set +o pipefail
           yes | "$SDKMANAGER" --licenses
           set -o pipefail
-
           "$SDKMANAGER" --install \
             "platform-tools" \
             "platforms;android-35" \
@@ -54,18 +47,36 @@ jobs:
         run: |
           unzip -q OnlineGames-Android-TWA-project.zip -d android-src
 
-      - name: Verify Android project
+      - name: Find Android project and build AAB
+        shell: bash
         run: |
-          test -f android-src/OnlineGames-Android-TWA/settings.gradle || \
-          test -f android-src/OnlineGames-Android-TWA/settings.gradle.kts
+          set -e
+          SETTINGS_FILE=$(find android-src -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)
 
-      - name: Build release AAB
-        run: |
-          gradle -p android-src/OnlineGames-Android-TWA bundleRelease
+          if [ -z "$SETTINGS_FILE" ]; then
+            echo "ERROR: Gradle settings file was not found."
+            find android-src -maxdepth 4 -type f | head -100
+            exit 1
+          fi
 
-      - name: Upload unsigned AAB artifact
+          PROJECT_DIR=$(dirname "$SETTINGS_FILE")
+          echo "Android project: $PROJECT_DIR"
+
+          gradle -p "$PROJECT_DIR" bundleRelease
+
+          mkdir -p dist
+          AAB_FILE=$(find "$PROJECT_DIR" -type f -path '*/outputs/bundle/release/*.aab' -print -quit)
+
+          if [ -z "$AAB_FILE" ]; then
+            echo "ERROR: AAB file was not generated."
+            exit 1
+          fi
+
+          cp "$AAB_FILE" dist/Online-Games.aab
+
+      - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Online-Games-AAB-unsigned
-          path: android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release/*.aab
+          name: Online-Games-AAB
+          path: dist/Online-Games.aab
           if-no-files-found: error
