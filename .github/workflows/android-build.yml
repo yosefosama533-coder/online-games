@@ -1,0 +1,51 @@
+name: Android AAB Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'OnlineGames-Android-TWA-project.zip'
+      - '.github/workflows/android-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Extract Android project
+        run: unzip -q OnlineGames-Android-TWA-project.zip -d android-src
+
+      - name: Build release AAB
+        run: gradle -p android-src/OnlineGames-Android-TWA bundleRelease
+
+      - name: Upload unsigned AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Online-Games-AAB-unsigned
+          path: android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
