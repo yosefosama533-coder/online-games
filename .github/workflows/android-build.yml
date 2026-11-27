@@ -1,3 +1,4 @@
+
 name: Android AAB Build
 
 on:
@@ -24,8 +25,6 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Use the Android command-line tools already present on GitHub's Ubuntu runner.
-      # Do not use android-actions/setup-android@v3 here.
       - name: Install Android SDK packages
         shell: bash
         run: |
@@ -36,14 +35,9 @@ jobs:
           fi
           if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
             echo "ERROR: sdkmanager was not found."
-            echo "ANDROID_HOME=${ANDROID_HOME}"
-            find "${ANDROID_HOME}" -maxdepth 4 -name sdkmanager -type f 2>/dev/null || true
             exit 1
           fi
-          echo "Using sdkmanager: $SDKMANAGER"
-          set +o pipefail
-          yes | "$SDKMANAGER" --licenses
-          set -o pipefail
+          yes | "$SDKMANAGER" --licenses || true
           "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Set up Gradle
@@ -59,42 +53,107 @@ jobs:
           PROJECT_DIR="android-src/OnlineGames-Android-TWA"
           if [ ! -d "$PROJECT_DIR" ]; then
             echo "ERROR: Android project folder was not found."
-            echo "Extracted folders:"
             find android-src -maxdepth 3 -type d | sort
             exit 1
           fi
 
-      - name: Fix Android minimum SDK compatibility
+      - name: Prepare signing key
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "ERROR: Missing GitHub secret: $name"
+              exit 1
+            fi
+          done
+
+          mkdir -p android-src/OnlineGames-Android-TWA/keystore
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" \
+            | tr -d '\r\n ' \
+            | base64 --decode \
+            > android-src/OnlineGames-Android-TWA/keystore/online-games-upload.jks
+
+          keytool -list \
+            -keystore android-src/OnlineGames-Android-TWA/keystore/online-games-upload.jks \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -alias "$ANDROID_KEY_ALIAS"
+
+      - name: Configure Android release signing
         shell: bash
         run: |
           set -euo pipefail
-          APP_GRADLE="android-src/OnlineGames-Android-TWA/app/build.gradle"
-          if [ ! -f "$APP_GRADLE" ]; then
-            echo "ERROR: app/build.gradle was not found: $APP_GRADLE"
-            find android-src -maxdepth 5 -type f | sort
-            exit 1
-          fi
-          echo "Android SDK settings before adjustment:"
-          grep -nE 'minSdk|androidbrowserhelper' "$APP_GRADLE" || true
-          if grep -qE 'minSdk[[:space:]]+23([[:space:]]|$)' "$APP_GRADLE"; then
-            sed -i -E 's/minSdk[[:space:]]+23([[:space:]]|$)/minSdk 24\1/' "$APP_GRADLE"
-          fi
-          if ! grep -qE 'minSdk[[:space:]]+24([[:space:]]|$)' "$APP_GRADLE"; then
-            echo "ERROR: Could not verify minSdk 24 in app/build.gradle."
-            exit 1
-          fi
-          echo "Android SDK settings after adjustment:"
-          grep -nE 'minSdk|androidbrowserhelper' "$APP_GRADLE"
 
-      - name: Build release AAB
+          cat > android-src/OnlineGames-Android-TWA/app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.onlinegames.yousef'
+              compileSdk 36
+
+              defaultConfig {
+                  applicationId 'com.onlinegames.yousef'
+                  minSdk 24
+                  targetSdk 36
+                  versionCode 1
+                  versionName '1.0.0'
+              }
+
+              signingConfigs {
+                  release {
+                      storeFile file("${rootProject.projectDir}/keystore/online-games-upload.jks")
+                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                      minifyEnabled false
+                  }
+              }
+          }
+
+          dependencies {
+              implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.8.0'
+          }
+          EOF
+
+      - name: Build signed release AAB
         shell: bash
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          set -e
+          set -euo pipefail
           gradle -p android-src/OnlineGames-Android-TWA bundleRelease
 
-      - name: Upload unsigned AAB artifact
+      - name: Verify signed AAB
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAB="android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release/app-release.aab"
+          if [ ! -s "$AAB" ]; then
+            echo "ERROR: Release AAB was not generated."
+            find android-src/OnlineGames-Android-TWA/app/build/outputs -type f || true
+            exit 1
+          fi
+          jarsigner -verify "$AAB"
+
+      - name: Upload signed AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Online-Games-AAB-unsigned
+          name: Online-Games-AAB-signed
           path: android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
