@@ -1,4 +1,3 @@
-
 name: Android AAB Build
 
 on:
@@ -25,18 +24,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Android SDK packages
-        shell: bash
         run: |
-          set -e
-          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          set +o pipefail
-          yes | "$SDKMANAGER" --licenses
-          set -o pipefail
-          "$SDKMANAGER" --install \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -44,39 +38,38 @@ jobs:
           gradle-version: '8.11.1'
 
       - name: Extract Android project
-        run: |
-          unzip -q OnlineGames-Android-TWA-project.zip -d android-src
+        run: unzip -q OnlineGames-Android-TWA-project.zip -d android-src
 
-      - name: Find Android project and build AAB
+      - name: Fix Android minimum SDK compatibility
         shell: bash
         run: |
-          set -e
-          SETTINGS_FILE=$(find android-src -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)
-
-          if [ -z "$SETTINGS_FILE" ]; then
-            echo "ERROR: Gradle settings file was not found."
-            find android-src -maxdepth 4 -type f | head -100
+          set -euo pipefail
+          PROJECT_DIR="android-src/OnlineGames-Android-TWA"
+          APP_GRADLE="$PROJECT_DIR/app/build.gradle"
+          if [ ! -f "$APP_GRADLE" ]; then
+            echo "ERROR: app/build.gradle was not found at $APP_GRADLE"
+            echo "Extracted files:"
+            find android-src -maxdepth 5 -type f | sort
             exit 1
           fi
-
-          PROJECT_DIR=$(dirname "$SETTINGS_FILE")
-          echo "Android project: $PROJECT_DIR"
-
-          gradle -p "$PROJECT_DIR" bundleRelease
-
-          mkdir -p dist
-          AAB_FILE=$(find "$PROJECT_DIR" -type f -path '*/outputs/bundle/release/*.aab' -print -quit)
-
-          if [ -z "$AAB_FILE" ]; then
-            echo "ERROR: AAB file was not generated."
+          echo "Before fix:"
+          grep -nE 'minSdk|androidbrowserhelper' "$APP_GRADLE" || true
+          if grep -qE 'minSdk[[:space:]]+23([[:space:]]|$)' "$APP_GRADLE"; then
+            sed -i -E 's/minSdk[[:space:]]+23([[:space:]]|$)/minSdk 24\1/' "$APP_GRADLE"
+          fi
+          if ! grep -qE 'minSdk[[:space:]]+([2-9][4-9]|[3-9][0-9])([[:space:]]|$)' "$APP_GRADLE"; then
+            echo "ERROR: minSdk is still below 24 or could not be verified."
             exit 1
           fi
+          echo "After fix:"
+          grep -nE 'minSdk|androidbrowserhelper' "$APP_GRADLE"
 
-          cp "$AAB_FILE" dist/Online-Games.aab
+      - name: Build release AAB
+        run: gradle -p android-src/OnlineGames-Android-TWA bundleRelease
 
-      - name: Upload AAB artifact
+      - name: Upload unsigned AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Online-Games-AAB
-          path: dist/Online-Games.aab
+          name: Online-Games-AAB-unsigned
+          path: android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
