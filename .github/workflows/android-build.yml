@@ -38,7 +38,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Extract project and enforce package ID
+      - name: Extract project and enforce Android settings
         shell: bash
         run: |
           set -euo pipefail
@@ -50,13 +50,16 @@ jobs:
           import re
           p = Path('android-src/OnlineGames-Android-TWA/app/build.gradle')
           s = p.read_text()
-          pattern = r"applicationId\s+['\"]com\.onlinegames\.[^'\"]+['\"]"
-          s2, n = re.subn(pattern, "applicationId 'com.onlinegames.official'", s)
-          if n == 0:
-              raise SystemExit('applicationId not found')
-          p.write_text(s2)
+          s, n1 = re.subn(r"namespace\s+['\"]com\.onlinegames\.[^'\"]+['\"]", "namespace 'com.onlinegames.official'", s)
+          s, n2 = re.subn(r"applicationId\s+['\"]com\.onlinegames\.[^'\"]+['\"]", "applicationId 'com.onlinegames.official'", s)
+          s, n3 = re.subn(r"minSdk\s+\d+", "minSdk 24", s)
+          if not (n1 and n2 and n3):
+              raise SystemExit(f'Could not safely update Gradle settings: namespace={n1}, applicationId={n2}, minSdk={n3}')
+          p.write_text(s)
           PY
+          grep -q "namespace 'com.onlinegames.official'" "$PROJECT/app/build.gradle"
           grep -q "applicationId 'com.onlinegames.official'" "$PROJECT/app/build.gradle"
+          grep -q 'minSdk 24' "$PROJECT/app/build.gradle"
 
       - name: Build release AAB
         run: gradle -p android-src/OnlineGames-Android-TWA bundleRelease
