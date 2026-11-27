@@ -53,7 +53,8 @@ jobs:
           s, n1 = re.subn(r"namespace\s+['\"]com\.onlinegames\.[^'\"]+['\"]", "namespace 'com.onlinegames.official'", s)
           s, n2 = re.subn(r"applicationId\s+['\"]com\.onlinegames\.[^'\"]+['\"]", "applicationId 'com.onlinegames.official'", s)
           s, n3 = re.subn(r"minSdk\s+\d+", "minSdk 24", s)
-          if not (n1 and n2 and n3):
+          s, n4 = re.subn(r"versionCode\s*(?:=\s*)?\d+", "versionCode 2", s)
+          if not (n1 and n2 and n3 and n4):
               raise SystemExit(f'Could not safely update Gradle settings: namespace={n1}, applicationId={n2}, minSdk={n3}')
           p.write_text(s)
           PY
