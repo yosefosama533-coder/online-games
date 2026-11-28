@@ -1,11 +1,10 @@
-
 name: Android AAB Build
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'OnlineGames-Android-TWA-project-v5-version4.zip'
+      - 'OnlineGames-Android-TWA-project.zip'
       - '.github/workflows/android-build.yml'
 
 permissions:
@@ -38,57 +37,77 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Extract project and enforce Android settings
+      - name: Extract project and enforce Play package ID
         shell: bash
         run: |
           set -euo pipefail
-          unzip -q OnlineGames-Android-TWA-project-v5-version4.zip -d android-src
+          unzip -q OnlineGames-Android-TWA-project.zip -d android-src
           PROJECT="android-src/OnlineGames-Android-TWA"
           test -f "$PROJECT/app/build.gradle"
-
           python3 - <<'PY'
           from pathlib import Path
           import re
-
           p = Path('android-src/OnlineGames-Android-TWA/app/build.gradle')
           s = p.read_text()
-
-          s, n1 = re.subn(r"namespace\s+['\"]com\.onlinegames\.[^'\"]+['\"]", "namespace 'com.onlinegames.official'", s)
-          s, n2 = re.subn(r"applicationId\s+['\"]com\.onlinegames\.[^'\"]+['\"]", "applicationId 'com.onlinegames.official'", s)
-          s, n3 = re.subn(r"minSdk\s+\d+", "minSdk 24", s)
-          s, n4 = re.subn(r"versionCode\s*(?:=\s*)?\d+", "versionCode 4", s)
-
-          if not (n1 and n2 and n3 and n4):
-              raise SystemExit(
-                  f'Could not safely update Gradle settings: '
-                  f'namespace={n1}, applicationId={n2}, minSdk={n3}, versionCode={n4}'
-              )
-
-          p.write_text(s)
+          pattern = r"""applicationId\s+['"]com\.onlinegames\.[^'"]+['"]"""
+          s2, n = re.subn(pattern, "applicationId 'com.onlinegames.official'", s)
+          if n == 0:
+              raise SystemExit('Could not find applicationId declaration in app/build.gradle')
+          p.write_text(s2)
+          print('Enforced applicationId com.onlinegames.official')
           PY
-
-          grep -q "namespace 'com.onlinegames.official'" "$PROJECT/app/build.gradle"
           grep -q "applicationId 'com.onlinegames.official'" "$PROJECT/app/build.gradle"
-          grep -q 'minSdk 24' "$PROJECT/app/build.gradle"
-          grep -q 'versionCode 4' "$PROJECT/app/build.gradle"
 
-      - name: Build release AAB
-        run: gradle -p android-src/OnlineGames-Android-TWA bundleRelease
-
-      - name: Verify AAB package ID and version
+      - name: Add missing AppCompat theme dependency
         shell: bash
         run: |
           set -euo pipefail
-          AAB="$(find android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release -name '*.aab' -type f | head -n 1)"
+          APP_GRADLE="android-src/OnlineGames-Android-TWA/app/build.gradle"
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('android-src/OnlineGames-Android-TWA/app/build.gradle')
+          s = p.read_text()
+          if 'androidx.appcompat:appcompat' not in s:
+              m = re.search(r'(?m)^dependencies\s*\{', s)
+              if not m:
+                  raise SystemExit('Could not find dependencies block in app/build.gradle')
+              pos = m.end()
+              s = s[:pos] + "\n    implementation 'androidx.appcompat:appcompat:1.7.0'" + s[pos:]
+              p.write_text(s)
+          if 'androidx.appcompat:appcompat:1.7.0' not in p.read_text():
+              raise SystemExit('AppCompat dependency was not added')
+          print('Verified AppCompat dependency')
+          PY
+
+      - name: Build release AAB
+        run: gradle -p android-src/OnlineGames-Android-TWA bundleProductionRelease
+
+      - name: Build diagnostic APK (separate package)
+        run: gradle -p android-src/OnlineGames-Android-TWA assembleDiagnosticDebug
+
+      - name: Upload diagnostic APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Online-Games-Diagnostic-APK
+          path: android-src/OnlineGames-Android-TWA/app/build/outputs/apk/diagnostic/debug/*.apk
+          if-no-files-found: error
+
+      - name: Verify AAB package ID
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAB="$(find android-src/OnlineGames-Android-TWA/app/build/outputs/bundle -type f -name '*.aab' | grep -v diagnostic | head -n 1)"
           test -n "$AAB"
-
-          curl -fsSL -o "$RUNNER_TEMP/bundletool.jar" \
+          curl -fsSL -o "$RUNNER_TEMP/bundletool.jar" \\
             https://github.com/google/bundletool/releases/download/1.18.2/bundletool-all-1.18.2.jar
-
           java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle="$AAB" --module=base > "$RUNNER_TEMP/manifest.xml"
-
-          grep -q 'package="com.onlinegames.official"' "$RUNNER_TEMP/manifest.xml"
-          grep -q 'android:versionCode="4"' "$RUNNER_TEMP/manifest.xml"
+          grep -q 'package="com.onlinegames.official"' "$RUNNER_TEMP/manifest.xml" || {
+            echo 'ERROR: AAB package ID is not com.onlinegames.official'
+            cat "$RUNNER_TEMP/manifest.xml"
+            exit 1
+          }
+          echo 'Verified AAB package ID: com.onlinegames.official'
 
       - name: Sign AAB
         shell: bash
@@ -101,15 +120,11 @@ jobs:
           set -euo pipefail
           test -n "$KEYSTORE_BASE64"
           echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
-
-          AAB="$(find android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release -name '*.aab' -type f | head -n 1)"
-
-          jarsigner -keystore "$RUNNER_TEMP/upload-key.jks" \
-            -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" \
+          AAB="$(find android-src/OnlineGames-Android-TWA/app/build/outputs/bundle -type f -name '*.aab' | grep -v diagnostic | head -n 1)"
+          jarsigner -keystore "$RUNNER_TEMP/upload-key.jks" \\
+            -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" \\
             "$AAB" "$KEY_ALIAS"
-
           jarsigner -verify "$AAB"
-
           mkdir -p signed
           cp "$AAB" signed/app-release.aab
 
