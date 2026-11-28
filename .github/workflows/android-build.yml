@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'OnlineGames-Android-TWA-project.zip'
+      - 'OnlineGames-Android-TWA-project-v5-version4.zip'
       - '.github/workflows/android-build.yml'
 
 permissions:
@@ -42,39 +42,53 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          unzip -q OnlineGames-Android-TWA-project.zip -d android-src
+          unzip -q OnlineGames-Android-TWA-project-v5-version4.zip -d android-src
           PROJECT="android-src/OnlineGames-Android-TWA"
           test -f "$PROJECT/app/build.gradle"
+
           python3 - <<'PY'
           from pathlib import Path
           import re
+
           p = Path('android-src/OnlineGames-Android-TWA/app/build.gradle')
           s = p.read_text()
+
           s, n1 = re.subn(r"namespace\s+['\"]com\.onlinegames\.[^'\"]+['\"]", "namespace 'com.onlinegames.official'", s)
           s, n2 = re.subn(r"applicationId\s+['\"]com\.onlinegames\.[^'\"]+['\"]", "applicationId 'com.onlinegames.official'", s)
           s, n3 = re.subn(r"minSdk\s+\d+", "minSdk 24", s)
-          s, n4 = re.subn(r"versionCode\s*(?:=\s*)?\d+", "versionCode 2", s)
+          s, n4 = re.subn(r"versionCode\s*(?:=\s*)?\d+", "versionCode 4", s)
+
           if not (n1 and n2 and n3 and n4):
-              raise SystemExit(f'Could not safely update Gradle settings: namespace={n1}, applicationId={n2}, minSdk={n3}')
+              raise SystemExit(
+                  f'Could not safely update Gradle settings: '
+                  f'namespace={n1}, applicationId={n2}, minSdk={n3}, versionCode={n4}'
+              )
+
           p.write_text(s)
           PY
+
           grep -q "namespace 'com.onlinegames.official'" "$PROJECT/app/build.gradle"
           grep -q "applicationId 'com.onlinegames.official'" "$PROJECT/app/build.gradle"
           grep -q 'minSdk 24' "$PROJECT/app/build.gradle"
+          grep -q 'versionCode 4' "$PROJECT/app/build.gradle"
 
       - name: Build release AAB
         run: gradle -p android-src/OnlineGames-Android-TWA bundleRelease
 
-      - name: Verify AAB package ID
+      - name: Verify AAB package ID and version
         shell: bash
         run: |
           set -euo pipefail
           AAB="$(find android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release -name '*.aab' -type f | head -n 1)"
           test -n "$AAB"
+
           curl -fsSL -o "$RUNNER_TEMP/bundletool.jar" \
             https://github.com/google/bundletool/releases/download/1.18.2/bundletool-all-1.18.2.jar
+
           java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle="$AAB" --module=base > "$RUNNER_TEMP/manifest.xml"
+
           grep -q 'package="com.onlinegames.official"' "$RUNNER_TEMP/manifest.xml"
+          grep -q 'android:versionCode="4"' "$RUNNER_TEMP/manifest.xml"
 
       - name: Sign AAB
         shell: bash
@@ -87,11 +101,15 @@ jobs:
           set -euo pipefail
           test -n "$KEYSTORE_BASE64"
           echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+
           AAB="$(find android-src/OnlineGames-Android-TWA/app/build/outputs/bundle/release -name '*.aab' -type f | head -n 1)"
+
           jarsigner -keystore "$RUNNER_TEMP/upload-key.jks" \
             -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" \
             "$AAB" "$KEY_ALIAS"
+
           jarsigner -verify "$AAB"
+
           mkdir -p signed
           cp "$AAB" signed/app-release.aab
 
